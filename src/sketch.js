@@ -1,4 +1,5 @@
 import { motionRequestPermission, motionStartOrientation } from "./motion";
+import { KeepAwake } from '@capacitor-community/keep-awake';
 import { Particle } from "./particle";
 
 export const sketch = new p5((p) => {
@@ -25,6 +26,9 @@ export const sketch = new p5((p) => {
     // Permiso (sobre todo iOS)
     let permission = await motionRequestPermission();
     console.log("Motion permission:", permission);
+
+    // Esto mantiene la pantalla encendida
+    await KeepAwake.keepAwake();
 
     // Listener de orientación
    await motionStartOrientation((o) => {
