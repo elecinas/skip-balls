@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">skip_balls</string>
+    <string name="title_activity_main">skip_balls</string>
+    <string name="package_name">com.skip_balls.app</string>
+    <string name="custom_url_scheme">com.skip_balls.app</string>
+</resources>
