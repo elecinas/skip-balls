@@ -7,6 +7,7 @@ export const sketch = new p5((p) => {
   // gamma: inclinación izquierda/derecha (-90..90)
   let degrees = { alpha: 0, beta: 0, gamma: 0 };
   let player = { x: 0, y: 0, size: 50 };
+  let vx = 0;
   const floorHeight = 100;
 
   p.setup = async () => {
@@ -49,11 +50,25 @@ export const sketch = new p5((p) => {
 
   function drawPlayer() {
     const playerRadius = player.size / 2;
+
+    // Calcular aceleración según inclinación
+    const gravity = p.constrain(degrees.gamma, -45, 45); //limitar valores extremos
+    const acceleration = p.map(gravity, -45, 45, -0.4, 0.4); //aceleración según inclinación
+
+    // Actualizar velocidad y posición
+    vx += acceleration; // actualizar velocidad
+    vx *= 0.95; // fricción
+    player.x += vx; // actualizar posición
+
     // Limitar posición dentro de la pantalla
-    player.x = p.constrain(player.x, playerRadius, p.width - playerRadius);
-    p.fill(100);
-    player.x += p.map(degrees.gamma, -90, 90, -5, 5);
+    if (player.x < playerRadius) {player.x = playerRadius; vx = 0;}
+    if (player.x > p.width - playerRadius) {player.x = p.width - playerRadius; vx = 0;}
+
+    // Posición vertical fija
     player.y = p.height - playerRadius - floorHeight;
+
+    // Dibujar jugador
+    p.fill(100);
     p.circle(player.x, player.y, player.size);
   }
 });
