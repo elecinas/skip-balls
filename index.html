@@ -1,16 +1,29 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pomodoro-capacitor</title>
+    <title>Skip balls</title>
     <script src="/p5.js"></script>
     <script src="/p5.sound.min.js"></script>
   </head>
   <body>
     <div id="app">
-      <div id="p5-container"></div>
+      <!-- Vista juego -->
+      <div id="gameView" class="view">
+        <div id="p5-container"></div>
+        <button id="btnSettings" class="fab">⚙️</button>
+      </div>
+
+      <!-- Vista configuración -->
+      <div id="settingsView" class="view hidden">
+        <div class="panel">
+          <h1>Ajustes</h1>
+          <p>Panel de control (placeholder)</p>
+          <button id="btnCloseSettings">Cerrar</button>
+        </div>
+      </div>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>

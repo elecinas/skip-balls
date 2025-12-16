@@ -1,29 +1,23 @@
-import './style.css'
-import './sketch.js'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.js'
+import "./style.css";
+import "./sketch.js"; 
 
-console.log('App iniciada')
+const gameView = document.getElementById("gameView");
+const settingsView = document.getElementById("settingsView");
+const btnSettings = document.getElementById("btnSettings");
+const btnCloseSettings = document.getElementById("btnCloseSettings");
 
-const appDiv = document.querySelector('#app');
-const contentDiv = document.createElement('div');
-contentDiv.id = 'content';
-contentDiv.innerHTML = `
-  <a href="https://vite.dev" target="_blank">
-    <img src="${viteLogo}" class="logo" alt="Vite logo" />
-  </a>
-  <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-    <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-  </a>
-  <h1>Hello Vite!</h1>
-  <div class="card">
-    <button id="counter" type="button"></button>
-  </div>
-  <p class="read-the-docs">
-    Click on the Vite logo to learn more
-  </p>
-`;
-appDiv.appendChild(contentDiv);
+function showGame() {
+  settingsView.classList.add("hidden");
+  gameView.classList.remove("hidden");
+}
 
-setupCounter(document.querySelector('#counter'))
+function showSettings() {
+  gameView.classList.add("hidden");
+  settingsView.classList.remove("hidden");
+}
+
+btnSettings.addEventListener("click", showSettings);
+btnCloseSettings.addEventListener("click", showGame);
+
+// Por defecto: juego
+showGame();
