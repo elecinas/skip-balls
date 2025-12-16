@@ -3,6 +3,8 @@ import { KeepAwake } from '@capacitor-community/keep-awake';
 import { Particle } from "./particle";
 
 export const sketch = new p5((p) => {
+  let isGameOver = false; // Estado del juego
+
   // Variables para orientación
   // alpha: rotación alrededor del eje Z (0..360)
   // beta: inclinación adelante/atrás (-180..180)
@@ -45,25 +47,50 @@ export const sketch = new p5((p) => {
     p.resizeCanvas(p.windowWidth, p.windowHeight);
   };
 
-  p.draw = () => {
+ p.draw = () => {
     p.background(0);
 
-    // Partículas
-    spawnParticles();
-    updateAndDrawParticles();
+    // Lógica de juego
+    if (isGameOver) {
+      // PANTALLA DE GAME OVER
+      p.fill(255, 0, 0);
+      p.textSize(40);
+      p.textAlign(p.CENTER, p.CENTER);
+      p.text("GAME OVER", p.width / 2, p.height / 2 - 20);
+      
+      p.fill(255);
+      p.textSize(20);
+      p.text("Toca para reiniciar", p.width / 2, p.height / 2 + 30);
+      
+      // Detenemos la creación y movimiento de partículas
+      // (simplemente no llamamos a spawnParticles ni update...)
+      
+      // Pero dibujamos las partículas estáticas para que se vea qué te mató
+      for (let particle of particles) {
+        particle.draw(); 
+      }
 
-    // Suelo
+    } else {
+      // Sigue el juego
+      spawnParticles();
+      updateAndDrawParticles();
+    }
+
+    // Dibuja suelo y jugador
     p.fill(250);
     p.rect(0, p.height - floorHeight, p.width, floorHeight);
+    drawPlayer(70); 
+  };
 
-    drawPlayer(70);
-
-    // p.fill(255);
-    // p.textSize(24);
-    // p.textAlign(p.CENTER, p.CENTER);
-    // p.text("Juego (pantalla completa)", p.width / 2, p.height / 2);
-    // p.text(`gamma: ${degrees.gamma.toFixed(1)}`, p.width / 2, p.height / 2 + 100);
-
+  p.mousePressed = () => {
+    if (isGameOver) {
+      // Resetear el juego
+      particles = [];
+      player.x = p.width / 2;
+      vx = 0;
+      spawnEvery = 50;
+      isGameOver = false;
+    }
   };
 
   function spawnParticles() {
@@ -96,6 +123,22 @@ export const sketch = new p5((p) => {
       const particle = particles[i];
       particle.update();
       particle.draw();
+
+      //Distancia entre jugador y partícula
+      const d = p.dist(player.x, player.y, particle.pos.x, particle.pos.y);
+
+      //Suma de radios (mitad player.size + particle.radius)
+      let minDist = (player.size / 2) + particle.radius;
+
+      // Si hay colisión
+      if(d < minDist) {
+        isGameOver = true;
+        // p.noLoop(); // Detener el juego
+        // console.log("¡Juego terminado!");
+        //TODO: manejar fin de juego
+        //TODO: efectos sonido / visuales
+        //TODO: botón reiniciar
+      }
 
       // Si la partícula está fuera de la pantalla, eliminarla
       if(particle.isOffScreen(p.height - floorHeight)) {
