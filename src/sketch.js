@@ -1,9 +1,12 @@
 import { motionRequestPermission, motionStartOrientation } from "./motion";
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { Particle } from "./particle";
+import { GameStorage } from "./storage";
 
 export const sketch = new p5((p) => {
   let isGameOver = false; // Estado del juego
+  let sessionCoins = 0; // Monedas ganadas en la sesión actual
+  let currentUsername = "Jugador";
 
   // Variables para orientación
   // alpha: rotación alrededor del eje Z (0..360)
@@ -28,6 +31,10 @@ export const sketch = new p5((p) => {
     // Permiso (sobre todo iOS)
     let permission = await motionRequestPermission();
     console.log("Motion permission:", permission);
+
+    // Obtener nombre de usuario actual
+    const data = GameStorage.getData();
+    currentUsername = data.username || "Jugador";
 
     // Esto mantiene la pantalla encendida
     await KeepAwake.keepAwake();
@@ -74,6 +81,12 @@ export const sketch = new p5((p) => {
       // Sigue el juego
       spawnParticles();
       updateAndDrawParticles();
+
+      //Sistema de puntuación:
+      p.fill(255);
+      p.textAlign(p.LEFT, p.TOP);
+      p.textSize(24);
+      p.text(`${currentUsername}: 💰 ${sessionCoins}`, 20, 50);
     }
 
     // Dibuja suelo y jugador
@@ -89,6 +102,12 @@ export const sketch = new p5((p) => {
       player.x = p.width / 2;
       vx = 0;
       spawnEvery = 50;
+      sessionCoins = 0; //resetear monedas de la sesión
+
+      // Actualizar nombre de usuario actual
+      const data = GameStorage.getData();
+      currentUsername = data.username
+
       isGameOver = false;
     }
   };
@@ -105,10 +124,13 @@ export const sketch = new p5((p) => {
     const y = -30;
 
     //Variación de tamaño y velocidad
-    const radius = p.random(10, 20);
+    const radius = p.random(15, 25);
     const vel = p.random(0.07, 0.2);
 
-    particles.push( new Particle(p, x, y, radius, vel) );
+    // Por probabilidad, decidir si es partícula dañina o moneda
+    const type = (p.random() < 0.2) ? 'coin' : 'damage'; // 20% monedas, 80% daño
+
+    particles.push( new Particle(p, x, y, radius, vel, type) );
 
     // Hacer el juego más difícil con el tiempo.
     // Cada 500 frames (aprox 8 segundos), reducimos el tiempo de aparición
@@ -132,12 +154,20 @@ export const sketch = new p5((p) => {
 
       // Si hay colisión
       if(d < minDist) {
-        isGameOver = true;
-        // p.noLoop(); // Detener el juego
-        // console.log("¡Juego terminado!");
-        //TODO: manejar fin de juego
-        //TODO: efectos sonido / visuales
-        //TODO: botón reiniciar
+        //CASO 1: moneda
+        if(particle.type === 'coin') {
+          // Es una moneda: sumar monedas
+          sessionCoins++;
+          particles.splice(i, 1); // eliminar partícula
+          //TODO: sonido moneda
+          continue;
+        }
+        //CASO 2: partícula dañina
+        if(particle.type === 'damage') {
+          // Es dañina: game over
+          isGameOver = true;
+          GameStorage.addCoins(sessionCoins); // Guardar monedas ganadas
+        }
       }
 
       // Si la partícula está fuera de la pantalla, eliminarla
