@@ -55,3 +55,26 @@ html, body, #app {
   color: white;
   text-align: center;
 }
+
+.ranking-container {
+  background: rgba(255,255,255,0.5);
+  padding: 10px;
+  border-radius: 10px;
+  width: 90%;
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 10px 0;
+}
+
+#rankingList {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+}
+
+#rankingList li {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #ccc;
+  padding: 5px 0;
+}

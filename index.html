@@ -19,13 +19,24 @@
       <!-- Vista configuración -->
       <div id="settingsView" class="view hidden">
         <div class="panel">
-          <h1>Ajustes</h1>
+          <h1>Récords</h1>
+          
           <div class="user-settings">
-            <label for="usernameInput">Nombre:</label>
-            <input type="text" id="usernameInput" placeholder="Tu nombre">
-            <p>Monedas totales: <span id="totalPointsDisplay">0</span></p>
+            <label>Nombre:</label>
+            <input type="text" id="usernameInput">
+            <p style="color: gold; font-weight: bold; font-size: 1.2rem;">
+              Lingotes: <span id="lingotesDisplay">0</span> 🧱
+            </p>
           </div>
-          <button id="btnCloseSettings">Cerrar</button>
+
+          <div class="ranking-container">
+            <h3>Top 10 Partidas</h3>
+            <ul id="rankingList">
+              <li>Cargando...</li>
+            </ul>
+          </div>
+
+          <button id="btnCloseSettings">Volver al Juego</button>
         </div>
       </div>
     </div>

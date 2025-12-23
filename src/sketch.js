@@ -28,7 +28,7 @@ export const sketch = new p5((p) => {
     let cnv = p.createCanvas(p.windowWidth, p.windowHeight);
     cnv.parent("p5-container");
 
-    // Permiso (sobre todo iOS)
+    // Permiso
     let permission = await motionRequestPermission();
     console.log("Motion permission:", permission);
 
@@ -63,11 +63,25 @@ export const sketch = new p5((p) => {
       p.fill(255, 0, 0);
       p.textSize(40);
       p.textAlign(p.CENTER, p.CENTER);
-      p.text("GAME OVER", p.width / 2, p.height / 2 - 20);
+      p.text("GAME OVER", p.width / 2, p.height / 2 - 60);
       
+      // Resumen de la partida
+      p.fill(255);
+      p.textSize(24);
+      p.text(`Monedas: ${sessionCoins}`, p.width / 2, p.height / 2);
+      
+      // Cálculo visual de lingotes
+      const lingotesEarned = Math.floor(sessionCoins / 30);
+      p.fill(255, 215, 0); // Dorado
+      p.text(`Lingotes ganados: +${lingotesEarned}`, p.width / 2, p.height / 2 + 40);
+      
+      p.fill(200);
+      p.textSize(16);
+      p.text("(30 monedas = 1 lingote)", p.width / 2, p.height / 2 + 70);
+
       p.fill(255);
       p.textSize(20);
-      p.text("Toca para reiniciar", p.width / 2, p.height / 2 + 30);
+      p.text("Toca para reiniciar", p.width / 2, p.height / 2 + 120);
       
       // Detenemos la creación y movimiento de partículas
       // (simplemente no llamamos a spawnParticles ni update...)
@@ -163,10 +177,18 @@ export const sketch = new p5((p) => {
           continue;
         }
         //CASO 2: partícula dañina
-        if(particle.type === 'damage') {
-          // Es dañina: game over
-          isGameOver = true;
-          GameStorage.addCoins(sessionCoins); // Guardar monedas ganadas
+        if (particle.type === 'damage') {
+            isGameOver = true;
+            // (División entera: 29 monedas = 0 lingotes)
+            // const lingotesEarned = Math.floor(sessionCoins / 30);
+            const lingotesEarned = sessionCoins; // Cambiado para testeo;
+            
+            if (lingotesEarned > 0) {
+                // Guardar total de lingotes
+                GameStorage.addLingotes(lingotesEarned);
+                // Ranking 
+                GameStorage.saveRankingEntry(currentUsername, lingotesEarned);
+            }
         }
       }
 
