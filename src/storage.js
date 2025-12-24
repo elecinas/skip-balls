@@ -4,6 +4,11 @@ const defaultData = {
   username: "Jugador",
   lingotes: 0,
   highScores: [],
+  characters: [
+    { id: 0, name: "Philip", cost: 0, img: "/robots/philip.png" },
+    { id: 1, name: "Anthony", cost: 10, img: "/robots/anthony.png" },
+    { id: 2, name: "Roy", cost: 20, img: "/robots/roy.png" }
+  ],
   unlockedCharacters: [0], 
   selectedCharacter: 0
 };

@@ -18,6 +18,7 @@ html, body, #app {
   padding: 0;
   overflow: hidden; /* Evita scrollbars */
   background: #000;
+  font-family: 'Arial', sans-serif;
 }
 
 .view {
@@ -77,4 +78,68 @@ html, body, #app {
   justify-content: space-between;
   border-bottom: 1px solid #ccc;
   padding: 5px 0;
+}
+
+/* --- ESTILOS PERSONAJES --- */
+
+#characterList {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.character-item {
+  background: white;
+  border-radius: 12px;
+  padding: 10px;
+  width: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 3px solid transparent;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.character-item img {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 5px;
+}
+
+.character-item span {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #333;
+}
+
+/* SELECCIONADO (Borde destacado) */
+.character-item.selected {
+  border-color: #8ED3F4; /* Azulito */
+  background-color: #F2EEFF;
+  transform: scale(1.05);
+  box-shadow: 0 0 10px #8ED3F4;
+}
+
+/* BLOQUEADO (Gris y opaco) */
+.character-item.locked {
+  filter: grayscale(100%);
+  opacity: 0.6;
+}
+
+.character-item.locked:hover {
+  opacity: 0.8; /* Al intentar comprar */
+}
+
+/*  precio */
+.price-tag {
+  background-color: gold;
+  color: black;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-top: 4px;
 }

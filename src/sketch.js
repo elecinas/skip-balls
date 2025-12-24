@@ -13,7 +13,7 @@ export const sketch = new p5((p) => {
   // beta: inclinación adelante/atrás (-180..180)
   // gamma: inclinación izquierda/derecha (-90..90)
   let degrees = { alpha: 0, beta: 0, gamma: 0 };
-  let player = { x: 0, y: 0, size: 50 };
+  let player = { x: 0, y: 0, size: 70 };
   let vx = 0;
   let floorHeight = 100;
 
@@ -24,9 +24,27 @@ export const sketch = new p5((p) => {
   let maxParticles = 40;
   let spawnEvery = 50; // Una bomba cada 50 frames
 
+  // --- IMÁGENES ---
+  let charImages = {}; // Objeto para imágenes cargadas: { 0: img1, 1: img2 }
+  let currentSkin = null; // La imagen actual
+
+  // PRECARGA DE IMÁGENES
+  p.preload = () => {
+    const data = GameStorage.getData();
+    // Recorremos array personajes y cargamos imágenes
+    data.characters.forEach(char => {
+      charImages[char.id] = p.loadImage(char.img); // cargar imagen en memoria
+      console.log("Cargando imagen personaje:", char.id, char.img);
+    });
+
+  };
+
   p.setup = async () => {
     let cnv = p.createCanvas(p.windowWidth, p.windowHeight);
     cnv.parent("p5-container");
+
+    // Dibujar imágenes desde el CENTRO
+    p.imageMode(p.CENTER);
 
     // Permiso
     let permission = await motionRequestPermission();
@@ -35,6 +53,9 @@ export const sketch = new p5((p) => {
     // Obtener nombre de usuario actual
     const data = GameStorage.getData();
     currentUsername = data.username || "Jugador";
+
+    // Seleccionar qué personaje
+    currentSkin = data.selectedCharacter;
 
     // Esto mantiene la pantalla encendida
     await KeepAwake.keepAwake();
@@ -55,6 +76,15 @@ export const sketch = new p5((p) => {
   };
 
  p.draw = () => {
+    // Revisamos cada 30 frames (aprox 0.5 seg) si ha cambiado el personaje
+    if (p.frameCount % 30 === 0) {
+        const data = GameStorage.getData();
+        // actualizamos currentSkin
+        if (charImages[data.selectedCharacter]) {
+            currentSkin = data.selectedCharacter;
+        }
+    }
+
     p.background(0);
 
     // Lógica de juego
@@ -84,9 +114,7 @@ export const sketch = new p5((p) => {
       p.text("Toca para reiniciar", p.width / 2, p.height / 2 + 120);
       
       // Detenemos la creación y movimiento de partículas
-      // (simplemente no llamamos a spawnParticles ni update...)
-      
-      // Pero dibujamos las partículas estáticas para que se vea qué te mató
+      // dibujamos las partículas estáticas
       for (let particle of particles) {
         particle.draw(); 
       }
@@ -106,7 +134,7 @@ export const sketch = new p5((p) => {
     // Dibuja suelo y jugador
     p.fill(250);
     p.rect(0, p.height - floorHeight, p.width, floorHeight);
-    drawPlayer(70); 
+    drawPlayer(); 
   };
 
   p.mousePressed = () => {
@@ -120,7 +148,10 @@ export const sketch = new p5((p) => {
 
       // Actualizar nombre de usuario actual
       const data = GameStorage.getData();
-      currentUsername = data.username
+      currentUsername = data.username;
+
+      // ACTUALIZAR PERSONAJE
+      currentSkin = charImages[data.selectedCharacter];
 
       isGameOver = false;
     }
@@ -199,7 +230,7 @@ export const sketch = new p5((p) => {
     }
   }
 
-  function drawPlayer(size = 50) {
+  function drawPlayer() {
     const playerRadius = player.size / 2;
 
     // Calcular aceleración según inclinación
@@ -210,7 +241,6 @@ export const sketch = new p5((p) => {
     vx += acceleration; // actualizar velocidad
     vx *= 0.95; // fricción
     player.x += vx; // actualizar posición
-    player.size = size; // definir tamaño
 
     // Limitar posición dentro de la pantalla
     if (player.x < playerRadius) {player.x = playerRadius; vx = 0;}
@@ -218,9 +248,17 @@ export const sketch = new p5((p) => {
 
     // Posición vertical fija
     player.y = p.height - playerRadius - floorHeight;
-
+    
+    let testSkin = charImages[currentSkin];
     // Dibujar jugador
-    p.fill(100);
-    p.circle(player.x, player.y, player.size);
+    if (testSkin && testSkin.width > 0) {
+        p.image(testSkin, player.x, player.y, player.size, player.size);
+    } else {
+        // por si falla la imagen (círculo gris)
+        p.fill(100);
+        p.circle(player.x, player.y, player.size);
+    }
+    // p.fill(100);
+    // p.circle(player.x, player.y, player.size);
   }
 });
