@@ -7,21 +7,37 @@
   --gold: #ffd700;
 }
 
-body {
+* {
+  box-sizing: border-box; /* El padding no aumenta el tamaño total */
+  user-select: none;      /* Evita que se seleccione texto al tocar */
+  -webkit-tap-highlight-color: transparent; /* Quita el flash gris al tocar en Android */
+}
+
+html, body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   background-color: var(--bg-color);
   color: var(--text-color);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:'Helvetica Neue', Helvetica, Arial, sans-seriff;
   overflow: hidden; /* Evita barras de scroll */
   user-select: none; /* Evita que seleccionen el texto al jugar */
+  touch-action: none;     /* Bloquea gestos del navegador (pull-to-refresh) */
+}
+
+/* Fix específico para p5.js */
+canvas {
+  display: block; /* Evita el margen fantasma de 4px en la parte inferior */
 }
 
 /* El contenedor principal */
 #app {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   position: relative;
+  overflow: hidden;
 }
 
 /* Las vistas (Juego y Ajustes) */
