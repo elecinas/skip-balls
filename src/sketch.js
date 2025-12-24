@@ -28,6 +28,16 @@ export const sketch = new p5((p) => {
   let charImages = {}; // Objeto para imágenes cargadas: { 0: img1, 1: img2 }
   let currentSkin = null; // La imagen actual
 
+  // --- COLORES DE DISEÑO (Cyberpunk CMY Palette) ---
+  const COLORS = {
+    bg: '#0b0c10',         // Fondo oscuro (Black)
+    floor: '#1f2833',      // Suelo metálico (Deep Blue)
+    neon: '#66fcf1',       // Cian brillante (Cyan)
+    text: '#c5c6c7',       // Gris claro
+    danger: '#ff2a6d',     // ROJO LÁSER / MAGENTA (Nuevo)
+    gold: '#f5d300'        // AMARILLO ELÉCTRICO (Nuevo)
+  };
+
   // PRECARGA DE IMÁGENES
   p.preload = () => {
     const data = GameStorage.getData();
@@ -45,6 +55,9 @@ export const sketch = new p5((p) => {
 
     // Dibujar imágenes desde el CENTRO
     p.imageMode(p.CENTER);
+
+    //Fuente moderna
+    p.textFont('sans-serif');
 
     // Permiso
     let permission = await motionRequestPermission();
@@ -85,33 +98,45 @@ export const sketch = new p5((p) => {
         }
     }
 
-    p.background(0);
+    p.background(COLORS.bg);
 
     // Lógica de juego
     if (isGameOver) {
       // PANTALLA DE GAME OVER
-      p.fill(255, 0, 0);
+      p.fill(COLORS.danger);
       p.textSize(40);
+      p.textStyle(p.BOLD);
       p.textAlign(p.CENTER, p.CENTER);
-      p.text("GAME OVER", p.width / 2, p.height / 2 - 60);
+      p.text("SYSTEM FAILURE", p.width / 2, p.height / 2 - 60);
+
+      // Quitamos brillo para el resto
+      p.drawingContext.shadowBlur = 0;
       
       // Resumen de la partida
-      p.fill(255);
+      p.fill(COLORS.text);
       p.textSize(24);
+      p.textStyle(p.NORMAL);
       p.text(`Monedas: ${sessionCoins}`, p.width / 2, p.height / 2);
       
       // Cálculo visual de lingotes
       const lingotesEarned = Math.floor(sessionCoins / 30);
-      p.fill(255, 215, 0); // Dorado
+      p.fill(COLORS.gold); // Dorado
       p.text(`Lingotes ganados: +${lingotesEarned}`, p.width / 2, p.height / 2 + 40);
       
-      p.fill(200);
+      p.fill(100);
       p.textSize(16);
       p.text("(30 monedas = 1 lingote)", p.width / 2, p.height / 2 + 70);
 
-      p.fill(255);
-      p.textSize(20);
-      p.text("Toca para reiniciar", p.width / 2, p.height / 2 + 120);
+      // Texto parpadeante
+      if (p.frameCount % 60 < 30) {
+        p.fill(COLORS.neon);
+        p.textSize(20);
+        p.text("> TOCA PARA REINICIAR <", p.width / 2, p.height / 2 + 130);
+      }
+
+      // p.fill(255);
+      // p.textSize(20);
+      // p.text("Toca para reiniciar", p.width / 2, p.height / 2 + 120);
       
       // Detenemos la creación y movimiento de partículas
       // dibujamos las partículas estáticas
@@ -125,15 +150,37 @@ export const sketch = new p5((p) => {
       updateAndDrawParticles();
 
       //Sistema de puntuación:
-      p.fill(255);
+      // --- HUD (PUNTUACIÓN) ---
+      p.fill(COLORS.neon);
       p.textAlign(p.LEFT, p.TOP);
       p.textSize(24);
-      p.text(`${currentUsername}: 💰 ${sessionCoins}`, 20, 50);
+      p.textStyle(p.BOLD);
+      // Sombra sutil cian
+      p.drawingContext.shadowBlur = 10;
+      p.drawingContext.shadowColor = COLORS.neon;
+      p.text(`${currentUsername}: ${sessionCoins} $`, 20, 50);
+      p.drawingContext.shadowBlur = 0; // Reset sombra
     }
 
     // Dibuja suelo y jugador
-    p.fill(250);
+    // --- DIBUJAR SUELO FUTURISTA ---
+    
+    // 1. El bloque del suelo (Gris oscuro metálico)
+    p.noStroke();
+    p.fill(COLORS.floor);
     p.rect(0, p.height - floorHeight, p.width, floorHeight);
+
+    // 2. La línea de neón superior
+    p.stroke(COLORS.neon);
+    p.strokeWeight(4);
+    // Efecto de brillo en la línea
+    p.drawingContext.shadowBlur = 15;
+    p.drawingContext.shadowColor = COLORS.neon;
+    p.line(0, p.height - floorHeight, p.width, p.height - floorHeight);
+    
+    // Resetear efectos de dibujo para el jugador
+    p.drawingContext.shadowBlur = 0;
+    p.noStroke();
     drawPlayer(); 
   };
 
@@ -210,9 +257,8 @@ export const sketch = new p5((p) => {
         //CASO 2: partícula dañina
         if (particle.type === 'damage') {
             isGameOver = true;
-            // (División entera: 29 monedas = 0 lingotes)
-            // const lingotesEarned = Math.floor(sessionCoins / 30);
-            const lingotesEarned = sessionCoins; // Cambiado para testeo;
+            // Dividimos entre 30 y quitamos decimales
+            const lingotesEarned = Math.floor(sessionCoins / 30);
             
             if (lingotesEarned > 0) {
                 // Guardar total de lingotes

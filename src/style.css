@@ -1,145 +1,249 @@
 :root {
-  --primary-color: #8ED3F4;
-  --secondary-color: #C7B6FF;
-  --background-color: #FFF7FB;
-  --surface-color: #F2EEFF;
-  --text-color: #2F3A4A;
-  --text-muted-color: #7A8597;
-  --accent-color: #FFB7C8;
-  --border-color: #E6DDF6;
+  --bg-color: #0b0c10;       /* Negro azulado profundo */
+  --panel-bg: rgba(31, 40, 51, 0.85); /* Gris semitransparente */
+  --neon-cyan: #66fcf1;      /* Cian eléctrico para detalles */
+  --metal-grad: linear-gradient(135deg, #e0e0e0 0%, #909090 100%); /* Gradiente plata */
+  --text-color: #c5c6c7;     /* Gris claro para textos */
+  --gold: #ffd700;
 }
 
-
-
-html, body, #app {
-  width: 100%;
-  height: 100%;
+body {
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Evita scrollbars */
-  background: #000;
-  font-family: 'Arial', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden; /* Evita barras de scroll */
+  user-select: none; /* Evita que seleccionen el texto al jugar */
 }
 
+/* El contenedor principal */
+#app {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+/* Las vistas (Juego y Ajustes) */
 .view {
-  position: fixed;
-  inset: 0;          /* top/right/bottom/left = 0 */
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+  transition: opacity 0.3s ease;
 }
 
 .hidden {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
 }
 
-/* Botón flotante */
-.fab {
-  position: fixed;
-  right: 16px;
-  top: 16px;
-  z-index: 10;
-  font-size: 18px;
-  padding: 12px 14px;
-  border-radius: 999px;
-  border: none;
-  cursor: pointer;
-}
-
-/* Panel ajustes */
+/* El Panel Central */
 .panel {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-content: center;
-  gap: 12px;
-  background: rgba(100, 100, 100, 0.8);
-  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+  width: 90%;
+  max-width: 400px;
+  max-height: 85vh; /* Que no ocupe toda la altura en móviles */
+  overflow-y: auto; /* Scroll si es necesario */
+  
+  background: var(--panel-bg);
+  backdrop-filter: blur(10px); /* EFECTO CRISTAL BORROSO */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 0 20px rgba(102, 252, 241, 0.1); /* Brillo cian muy sutil */
+  
   text-align: center;
 }
 
-.ranking-container {
-  background: rgba(255,255,255,0.5);
-  padding: 10px;
-  border-radius: 10px;
-  width: 90%;
-  max-height: 200px;
-  overflow-y: auto;
-  margin: 10px 0;
+/* Títulos */
+h1, h3 {
+  color: var(--neon-cyan);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 0 5px rgba(102, 252, 241, 0.5);
 }
 
-#rankingList {
+/* Inputs de texto */
+input[type="text"] {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid #45a29e;
+  color: white;
+  font-size: 1.2rem;
+  padding: 10px;
+  width: 80%;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+input[type="text"]:focus {
+  border-bottom-color: var(--neon-cyan);
+  box-shadow: 0 10px 10px -10px rgba(102, 252, 241, 0.2);
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+/* Botón principal (Volver al juego) */
+button#btnCloseSettings {
+  margin-top: 2rem;
+  background: var(--metal-grad);
+  border: none;
+  padding: 12px 30px;
+  border-radius: 50px;
+  
+  color: #1a1a1a;
+  font-weight: bold;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+button#btnCloseSettings:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+/* Botón flotante (La rueda dentada) */
+
+.fab {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  
+  background: rgba(0, 0, 0, 0.6);
+  border: none;  /* <--- AQUÍ: Hemos quitado el borde cian */
+  color: white;
+  
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  
+  /* Mantenemos la sombra suave para que no se pierda en el fondo, 
+     pero puedes borrarla si quieres que sea totalmente plano */
+  box-shadow: 0 0 10px rgba(102, 252, 241, 0.2); 
+  
+  transition: all 0.3s ease;
+}
+
+.fab:hover {
+  background: var(--neon-cyan);
+  color: black;
+  /* Hemos borrado la línea: transform: rotate(90deg); */
+  transform: scale(1.1); /* Opcional: Un pequeño zoom elegante en su lugar */
+}
+
+/* Aseguramos que el SVG se comporte bien */
+.fab svg {
+  width: 28px;
+  height: 28px;
+  fill: currentColor;
+  transition: transform 0.3s ease;
+}
+
+/* Contenedor de personajes (GRID) */
+#characterList {
+  display: flex;
+  flex-wrap: wrap;       /* CLAVE: Permite que bajen de línea si no caben */
+  justify-content: center; /* Los centra en la pantalla */
+  gap: 15px;
+  padding: 10px 0;
+  width: 100%;
+}
+
+/* Tarjeta individual */
+.character-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 10px;
+  
+  /* Tamaño flexible para móviles */
+  width: 90px;          /* Ancho base más pequeño */
+  flex-grow: 0;         /* No estirar demasiado */
+  flex-shrink: 0;       /* No encoger demasiado */
+  
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Imagen del robot */
+.character-item img {
+  width: 50px;          /* Un poco más pequeños para que quepan bien */
+  height: 50px;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
+  margin-bottom: 5px;
+}
+
+/* Texto del nombre dentro de la tarjeta */
+.character-item p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-color);
+}
+
+/* ... (Mantén los estados .selected y .locked igual que antes) ... */
+.character-item.selected {
+  border: 2px solid var(--neon-cyan);
+  background: rgba(102, 252, 241, 0.1);
+  box-shadow: 0 0 15px rgba(102, 252, 241, 0.3);
+  transform: translateY(-3px);
+}
+
+.character-item.locked {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+.character-item.locked::after {
+  content: "🔒";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+}
+
+/* Ranking List */
+ul#rankingList {
   list-style: none;
   padding: 0;
   text-align: left;
 }
 
-#rankingList li {
+ul#rankingList li {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
   display: flex;
   justify-content: space-between;
-  border-bottom: 1px solid #ccc;
-  padding: 5px 0;
-}
-
-/* --- ESTILOS PERSONAJES --- */
-
-#characterList {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-}
-
-.character-item {
-  background: white;
-  border-radius: 12px;
-  padding: 10px;
-  width: 90px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 3px solid transparent;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.character-item img {
-  width: 60px;
-  height: 60px;
-  margin-bottom: 5px;
-}
-
-.character-item span {
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: #333;
-}
-
-/* SELECCIONADO (Borde destacado) */
-.character-item.selected {
-  border-color: #8ED3F4; /* Azulito */
-  background-color: #F2EEFF;
-  transform: scale(1.05);
-  box-shadow: 0 0 10px #8ED3F4;
-}
-
-/* BLOQUEADO (Gris y opaco) */
-.character-item.locked {
-  filter: grayscale(100%);
-  opacity: 0.6;
-}
-
-.character-item.locked:hover {
-  opacity: 0.8; /* Al intentar comprar */
-}
-
-/*  precio */
-.price-tag {
-  background-color: gold;
-  color: black;
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 10px;
-  margin-top: 4px;
+  font-size: 0.9rem;
 }
