@@ -263,3 +263,24 @@ ul#rankingList li {
   justify-content: space-between;
   font-size: 0.9rem;
 }
+
+.credits {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 0.7rem; /* Letra pequeñita */
+  color: #888;       /* Color gris apagado */
+  padding-bottom: 20px;
+}
+
+.credits a {
+  color: var(--neon-cyan);
+  text-decoration: none;
+}
+
+.ai-note {
+  font-size: 0.6rem;
+  opacity: 0.7;
+  font-style: italic;
+  margin-top: 5px;
+  color: var(--neon-gold); /* Un toque dorado sutil queda genial */
+}

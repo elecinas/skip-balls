@@ -89,9 +89,11 @@ Para generar la aplicación nativa usando Capacitor:
 6.  Si mueres, tus monedas se convertirán en lingotes (cada 30 monedas un lingote), luego se pierden.
 7.  Tocar el botón **⚙️ (Engranaje)** para ir a la tienda y gastar los lingotes.
 
-## 📄 Licencia
+## 📢 Créditos y Atribuciones
 
-Este proyecto está bajo la licencia MIT. Siéntete libre de usarlo y modificarlo para aprender.
-
----
-Hecho con 💻 y p5.js
+* **Ilustraciones de Robots:** [Freepik](https://www.freepik.com)
+* **Código y Desarrollo:** Esther Lecina
+* **Herramientas de Apoyo:**
+    * Este proyecto ha utilizado **IA** como asistente de programación para:
+        * Resolución de bugs y depuración.
+        * Generación y refinamiento de estilos CSS.
