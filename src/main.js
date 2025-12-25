@@ -5,6 +5,7 @@ import { GameStorage } from "./storage.js";
 const gameView = document.getElementById("gameView");
 const settingsView = document.getElementById("settingsView");
 const btnSettings = document.getElementById("btnSettings");
+const btnCloseX = document.getElementById("btnCloseX");
 const btnCloseSettings = document.getElementById("btnCloseSettings");
 const usernameInput = document.getElementById("usernameInput");
 const lingotesDisplay = document.getElementById("lingotesDisplay");
@@ -110,6 +111,7 @@ usernameInput.addEventListener("input", (e) => {
 
 btnSettings.addEventListener("click", showSettings);
 btnCloseSettings.addEventListener("click", showGame);
+btnCloseX.addEventListener("click", showGame);
 
 // Iniciamos por defecto: juego
 showGame();

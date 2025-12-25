@@ -69,7 +69,7 @@ canvas {
   overflow-y: auto; /* Scroll si es necesario */
   
   background: var(--panel-bg);
-  backdrop-filter: blur(10px); /* EFECTO CRISTAL BORROSO */
+  backdrop-filter: blur(10px); /* Efecto de desenfoque */
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   padding: 2rem;
@@ -137,7 +137,7 @@ button#btnCloseSettings:active {
   box-shadow: 0 2px 5px rgba(0,0,0,0.5);
 }
 
-/* Botón flotante (La rueda dentada) */
+/* Botón (rueda dentada) */
 
 .fab {
   position: absolute;
@@ -148,7 +148,7 @@ button#btnCloseSettings:active {
   border-radius: 50%;
   
   background: rgba(0, 0, 0, 0.6);
-  border: none;  /* <--- AQUÍ: Hemos quitado el borde cian */
+  border: none;
   color: white;
   
   cursor: pointer;
@@ -158,8 +158,7 @@ button#btnCloseSettings:active {
   align-items: center;
   padding: 0;
   
-  /* Mantenemos la sombra suave para que no se pierda en el fondo, 
-     pero puedes borrarla si quieres que sea totalmente plano */
+  /* sombra suave */
   box-shadow: 0 0 10px rgba(102, 252, 241, 0.2); 
   
   transition: all 0.3s ease;
@@ -168,11 +167,9 @@ button#btnCloseSettings:active {
 .fab:hover {
   background: var(--neon-cyan);
   color: black;
-  /* Hemos borrado la línea: transform: rotate(90deg); */
-  transform: scale(1.1); /* Opcional: Un pequeño zoom elegante en su lugar */
+  transform: scale(1.1); /* zoom */
 }
 
-/* Aseguramos que el SVG se comporte bien */
 .fab svg {
   width: 28px;
   height: 28px;
@@ -180,11 +177,11 @@ button#btnCloseSettings:active {
   transition: transform 0.3s ease;
 }
 
-/* Contenedor de personajes (GRID) */
+/* Contenedor de personajes */
 #characterList {
   display: flex;
-  flex-wrap: wrap;       /* CLAVE: Permite que bajen de línea si no caben */
-  justify-content: center; /* Los centra en la pantalla */
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 15px;
   padding: 10px 0;
   width: 100%;
@@ -198,9 +195,9 @@ button#btnCloseSettings:active {
   padding: 10px;
   
   /* Tamaño flexible para móviles */
-  width: 90px;          /* Ancho base más pequeño */
-  flex-grow: 0;         /* No estirar demasiado */
-  flex-shrink: 0;       /* No encoger demasiado */
+  width: 90px;
+  flex-grow: 0;
+  flex-shrink: 0;
   
   cursor: pointer;
   transition: all 0.2s ease;
@@ -213,7 +210,7 @@ button#btnCloseSettings:active {
 
 /* Imagen del robot */
 .character-item img {
-  width: 50px;          /* Un poco más pequeños para que quepan bien */
+  width: 50px;   
   height: 50px;
   object-fit: contain;
   filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
@@ -226,8 +223,7 @@ button#btnCloseSettings:active {
   font-size: 0.8rem;
   color: var(--text-color);
 }
-
-/* ... (Mantén los estados .selected y .locked igual que antes) ... */
+/* Estado seleccionado */
 .character-item.selected {
   border: 2px solid var(--neon-cyan);
   background: rgba(102, 252, 241, 0.1);
@@ -267,8 +263,8 @@ ul#rankingList li {
 .credits {
   margin-top: 20px;
   text-align: center;
-  font-size: 0.7rem; /* Letra pequeñita */
-  color: #888;       /* Color gris apagado */
+  font-size: 0.7rem;
+  color: #888; 
   padding-bottom: 20px;
 }
 
@@ -282,5 +278,29 @@ ul#rankingList li {
   opacity: 0.7;
   font-style: italic;
   margin-top: 5px;
-  color: var(--neon-gold); /* Un toque dorado sutil queda genial */
+  color: var(--neon-gold);
+}
+
+/* Botón X de cerrar en la esquina */
+.close-btn-x {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  
+  color: #888;
+  font-size: 2rem;
+  line-height: 1;
+  font-weight: bold;
+  
+  cursor: pointer;
+  z-index: 20;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.close-btn-x:hover {
+  color: #ff2a6d;
+  transform: scale(1.2);
+  text-shadow: 0 0 10px rgba(255, 42, 109, 0.5);
 }
