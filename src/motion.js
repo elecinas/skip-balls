@@ -1,16 +1,16 @@
 import { Capacitor } from "@capacitor/core";
 import { Motion } from "@capacitor/motion";
 
-// Funció per comprovar si s'està executant en una plataforma nativa
+// Comprobar si estamos en entorno nativo
 const isNative = () => Capacitor.isNativePlatform();
 
 export async function motionRequestPermission() {
   if (!isNative()) return { granted: false, reason: "web" };
 
   try {
-    // Por si IOS o altres plataformes que necessiten permís explícit
+    // Por si IOS pide permiso explícito
     const perm = await Motion.requestPermissions();
-    // Retornem l'estat del permís
+    // Devolvemos el resultado de la petición de permiso
     return { granted: true, perm };
   } catch (e) {
     console.log("Motion permission error:", e);

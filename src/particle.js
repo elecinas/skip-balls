@@ -16,14 +16,12 @@ export class Particle {
     const p = this.p;
     p.noStroke();
     if (this.type === "damage") {
-      // --- PARTÍCULA DE DAÑO (ROJO LÁSER) ---
-      // Brillo intenso rosado/rojo
+      // --- PARTÍCULA DE DAÑO (ROJO) ---
       p.drawingContext.shadowBlur = 20;
       p.drawingContext.shadowColor = '#ff2a6d'; 
-      p.fill('#ff2a6d'); // Usamos Hexadecimal directo
+      p.fill('#ff2a6d');
     } else {
       // --- MONEDA (AMARILLO ELÉCTRICO) ---
-      // Brillo dorado eléctrico
       p.drawingContext.shadowBlur = 15;
       p.drawingContext.shadowColor = '#f5d300';
       p.fill('#f5d300'); 
@@ -31,15 +29,14 @@ export class Particle {
     p.circle(this.pos.x, this.pos.y, this.radius * 2);
     // Si es moneda, dibujamos un símbolo dentro
     // Quitamos el efecto de brillo (shadow) para el texto de dentro
-    // para que se lea nítido
     p.drawingContext.shadowBlur = 0;
 
     if (this.type === "coin") {
-      p.fill(0); // Texto negro para contraste máximo con el amarillo
+      p.fill(0);
       p.textAlign(p.CENTER, p.CENTER);
       p.textSize(this.radius * 1.2); // Un poco más grande
       p.textStyle(p.BOLD);
-      p.text("$", this.pos.x, this.pos.y + 1); // +1 para centrar visualmente
+      p.text("$", this.pos.x, this.pos.y + 1); // +1 para centrar
     }
   }
 

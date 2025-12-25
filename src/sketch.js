@@ -34,8 +34,8 @@ export const sketch = new p5((p) => {
     floor: '#1f2833',      // Suelo metálico (Deep Blue)
     neon: '#66fcf1',       // Cian brillante (Cyan)
     text: '#c5c6c7',       // Gris claro
-    danger: '#ff2a6d',     // ROJO LÁSER / MAGENTA (Nuevo)
-    gold: '#f5d300'        // AMARILLO ELÉCTRICO (Nuevo)
+    danger: '#ff2a6d',     // ROJO
+    gold: '#f5d300'        // AMARILLO
   };
 
   // PRECARGA DE IMÁGENES
@@ -56,7 +56,7 @@ export const sketch = new p5((p) => {
     // Dibujar imágenes desde el CENTRO
     p.imageMode(p.CENTER);
 
-    //Fuente moderna
+    //Fuente palo seco
     p.textFont('sans-serif');
 
     // Permiso
@@ -155,22 +155,21 @@ export const sketch = new p5((p) => {
       p.textAlign(p.LEFT, p.TOP);
       p.textSize(24);
       p.textStyle(p.BOLD);
-      // Sombra sutil cian
+      // Sombra cian
       p.drawingContext.shadowBlur = 10;
       p.drawingContext.shadowColor = COLORS.neon;
       p.text(`${currentUsername}: ${sessionCoins} $`, 20, 50);
       p.drawingContext.shadowBlur = 0; // Reset sombra
     }
 
-    // Dibuja suelo y jugador
-    // --- DIBUJAR SUELO FUTURISTA ---
+    // --- DIBUJAR SUELO ---
     
-    // 1. El bloque del suelo (Gris oscuro metálico)
+    // El bloque del suelo (Gris oscuro metálico)
     p.noStroke();
     p.fill(COLORS.floor);
     p.rect(0, p.height - floorHeight, p.width, floorHeight);
 
-    // 2. La línea de neón superior
+    // Línea de neón superior
     p.stroke(COLORS.neon);
     p.strokeWeight(4);
     // Efecto de brillo en la línea

@@ -13,25 +13,29 @@ const defaultData = {
   selectedCharacter: 0
 };
 
-const KEY = 'skip_balls'; // Cambiamos la key para resetear datos antiguos
+const KEY = 'skip_balls'; // Clave en localStorage
 
 export const GameStorage = {
+  // Obtener datos del jugador
   getData() {
     const str = localStorage.getItem(KEY);
     if (!str) return { ...defaultData };
     return JSON.parse(str);
   },
 
+  // Guardar datos del jugador
   saveData(data) {
     localStorage.setItem(KEY, JSON.stringify(data));
   },
 
+  // Actualizar nombre de usuario
   updateName(newName) {
     const data = this.getData();
     data.username = newName;
     this.saveData(data);
   },
 
+  // Añadir lingotes
   addLingotes(amount) {
     const data = this.getData();
     data.lingotes += amount;
@@ -41,7 +45,7 @@ export const GameStorage = {
 
   //Ranking
   saveRankingEntry(name, lingotesEarned) {
-    // Si no ganó lingotes, no guardamos nada (regla de negocio)
+    // Si no ganó lingotes, no guardamos nada
     if (lingotesEarned <= 0) return;
     const data = this.getData();
     // Guardamos: Nombre, lingotes ganados, y Fecha
