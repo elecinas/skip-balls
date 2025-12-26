@@ -1,53 +1,60 @@
-// src/storage.js
+import { Preferences } from '@capacitor/preferences';
+
+// datos de personajes
+export const CHARACTERS_DATA = [
+  { id: 0, name: "Philip", cost: 0, img: "/robots/philip.png" },
+  { id: 1, name: "Anthony", cost: 10, img: "/robots/anthony.png" },
+  { id: 2, name: "Roy", cost: 20, img: "/robots/roy.png" }
+];
 
 const defaultData = {
   username: "Jugador",
   lingotes: 0,
   highScores: [],
-  characters: [
-    { id: 0, name: "Philip", cost: 0, img: "/robots/philip.png" },
-    { id: 1, name: "Anthony", cost: 10, img: "/robots/anthony.png" },
-    { id: 2, name: "Roy", cost: 20, img: "/robots/roy.png" }
-  ],
+  characters: CHARACTERS_DATA,
   unlockedCharacters: [0], 
   selectedCharacter: 0
 };
 
-const KEY = 'skip_balls'; // Clave en localStorage
+const KEY = 'skip_balls_v2'; // Clave en localStorage
 
+// Devuelve una Promesa
 export const GameStorage = {
   // Obtener datos del jugador
-  getData() {
-    const str = localStorage.getItem(KEY);
-    if (!str) return { ...defaultData };
-    return JSON.parse(str);
+  async getData() {
+    const { value } = await Preferences.get({ key: KEY });
+    if (!value) return { ...defaultData };
+    return JSON.parse(value);
   },
 
   // Guardar datos del jugador
-  saveData(data) {
-    localStorage.setItem(KEY, JSON.stringify(data));
+  async saveData(data) {
+    await Preferences.set({
+      key: KEY,
+      value: JSON.stringify(data),
+    });
   },
 
   // Actualizar nombre de usuario
-  updateName(newName) {
-    const data = this.getData();
+  async updateName(newName) {
+    const data = await this.getData();
     data.username = newName;
-    this.saveData(data);
+    await this.saveData(data);
   },
 
   // Añadir lingotes
-  addLingotes(amount) {
-    const data = this.getData();
+  async addLingotes(amount) {
+    const data = await this.getData();
     data.lingotes += amount;
-    this.saveData(data);
+    await this.saveData(data);
     return data.lingotes;
   },
 
   //Ranking
-  saveRankingEntry(name, lingotesEarned) {
+  async saveRankingEntry(name, lingotesEarned) {
     // Si no ganó lingotes, no guardamos nada
     if (lingotesEarned <= 0) return;
-    const data = this.getData();
+    const data = await this.getData();
     // Guardamos: Nombre, lingotes ganados, y Fecha
     data.highScores.push({ 
       name: name, 
@@ -61,6 +68,6 @@ export const GameStorage = {
       data.highScores = data.highScores.slice(0, 10);
     }
     
-    this.saveData(data);
+    await this.saveData(data);
   }
 };

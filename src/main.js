@@ -18,9 +18,9 @@ function showGame() {
   gameView.classList.remove("hidden");
 }
 
-function showSettings() {
+async function showSettings() {
   //Al abrir los ajustes, cargar datos del jugador
-  const data = GameStorage.getData();
+  const data = await GameStorage.getData();
 
   // Datos del jugador
   usernameInput.value = data.username;
@@ -56,29 +56,31 @@ function showSettings() {
     charDiv.innerHTML = htmlContent;
 
     // EVENTO DE CLICK (Seleccionar o Comprar)
-    charDiv.addEventListener("click", () => {
-      if (isUnlocked) {
-        // --- SELECCIONAR ---
-        data.selectedCharacter = char.id;
-        GameStorage.saveData(data);
-        showSettings(); // Refrescar border
+    charDiv.addEventListener("click", async () => { // <--- async en el callback
+  if (isUnlocked) {
+    // -- SELECCIONAR --
+    data.selectedCharacter = char.id;
+    await GameStorage.saveData(data); // <--- await
+    showSettings(); 
+  } else {
+    if (confirm(`¿Desbloquear a ${char.name} por ${char.cost} lingotes?`)) {
+      // -- COMPRAR --
+      const freshData = await GameStorage.getData(); 
+
+      if (freshData.lingotes >= char.cost) {
+        freshData.lingotes -= char.cost;
+        freshData.unlockedCharacters.push(char.id);
+        freshData.selectedCharacter = char.id;
+
+        await GameStorage.saveData(freshData); // <--- await
+        alert(`¡${char.name} desbloqueado!`);
+        showSettings();
       } else {
-        // --- COMPRAR ---
-        // Confirmación simple
-        if (confirm(`¿Desbloquear a ${char.name} por ${char.cost} lingotes?`)) {
-          if (data.lingotes >= char.cost) {
-            data.lingotes -= char.cost;
-            data.unlockedCharacters.push(char.id);
-            data.selectedCharacter = char.id; // Lo seleccionamos automáticamente al comprar
-            GameStorage.saveData(data);
-            alert(`¡${char.name} desbloqueado!`);
-            showSettings();
-          } else {
-            alert("No tienes suficientes lingotes 🧱");
-          }
-        }
+        alert("No tienes suficientes lingotes 🧱");
       }
-    });
+    }
+  }
+});
 
     characterList.appendChild(charDiv);
   });

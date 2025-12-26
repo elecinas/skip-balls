@@ -1,7 +1,7 @@
+import { GameStorage, CHARACTERS_DATA } from "./storage";
 import { motionRequestPermission, motionStartOrientation } from "./motion";
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { Particle } from "./particle";
-import { GameStorage } from "./storage";
 
 export const sketch = new p5((p) => {
   let isGameOver = false; // Estado del juego
@@ -40,12 +40,11 @@ export const sketch = new p5((p) => {
 
   // PRECARGA DE IMÁGENES
   p.preload = () => {
-    const data = GameStorage.getData();
-    // Recorremos array personajes y cargamos imágenes
-    data.characters.forEach(char => {
-      charImages[char.id] = p.loadImage(char.img); // cargar imagen en memoria
-      console.log("Cargando imagen personaje:", char.id, char.img);
-    });
+    // Recorrer datos de personajes y cargar imágenes
+  CHARACTERS_DATA.forEach(char => {
+    charImages[char.id] = p.loadImage(char.img);
+    console.log("Pre-cargando imagen:", char.id, char.img);
+  });
 
   };
 
@@ -64,7 +63,7 @@ export const sketch = new p5((p) => {
     console.log("Motion permission:", permission);
 
     // Obtener nombre de usuario actual
-    const data = GameStorage.getData();
+    const data = await GameStorage.getData();
     currentUsername = data.username || "Jugador";
 
     // Seleccionar qué personaje
@@ -91,11 +90,12 @@ export const sketch = new p5((p) => {
  p.draw = () => {
     // Revisamos cada 30 frames (aprox 0.5 seg) si ha cambiado el personaje
     if (p.frameCount % 30 === 0) {
-        const data = GameStorage.getData();
-        // actualizamos currentSkin
-        if (charImages[data.selectedCharacter]) {
-            currentSkin = data.selectedCharacter;
-        }
+      // Actualizar skin actual
+        GameStorage.getData().then(data => {
+            if (charImages[data.selectedCharacter]) {
+                currentSkin = data.selectedCharacter;
+            }
+        });
     }
 
     p.background(COLORS.bg);
@@ -183,7 +183,7 @@ export const sketch = new p5((p) => {
     drawPlayer(); 
   };
 
-  p.mousePressed = () => {
+  p.mousePressed = async () => {
     if (isGameOver) {
       // Resetear el juego
       particles = [];
@@ -193,7 +193,7 @@ export const sketch = new p5((p) => {
       sessionCoins = 0; //resetear monedas de la sesión
 
       // Actualizar nombre de usuario actual
-      const data = GameStorage.getData();
+      const data = await GameStorage.getData();
       currentUsername = data.username;
 
       // ACTUALIZAR PERSONAJE
