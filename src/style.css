@@ -95,7 +95,7 @@ input[type="text"] {
   color: white;
   font-size: 1.2rem;
   padding: 10px;
-  width: 80%;
+  width: 100%;
   text-align: center;
   outline: none;
   transition: border-color 0.3s;
@@ -303,4 +303,101 @@ ul#rankingList li {
   color: #ff2a6d;
   transform: scale(1.2);
   text-shadow: 0 0 10px rgba(255, 42, 109, 0.5);
+}
+
+/* --- MEJORAS DE UI PARA CONFIGURACIÓN --- */
+
+/* Contenedor general de ajustes */
+.user-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Espacio entre bloques */
+  text-align: left;
+  width: 100%;
+}
+
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Espacio entre elementos dentro del grupo */
+}
+
+/* Títulos de sección dentro de ajustes */
+.settings-group h3 {
+  margin: 0 0 5px 0;
+  color: var(--neon-cyan);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Etiquetas de texto */
+.input-label {
+  font-size: 0.9rem;
+  color: #888;
+  margin-bottom: 2px;
+}
+
+/* Inputs y Selects (Estilo Cyberpunk unificado) */
+.cyber-input {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid #444;
+  border-bottom: 2px solid var(--neon-cyan); /* Línea de neón abajo */
+  color: white;
+  margin: 0 0 30px;
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: 4px;
+  outline: none;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.cyber-input:focus {
+  background-color: rgba(102, 252, 241, 0.1); /* Brillo cian al tocar */
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 10px rgba(102, 252, 241, 0.3);
+}
+
+/* Separador elegante */
+.cyber-separator {
+  border: 0;
+  height: 1px;
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0), var(--neon-cyan), rgba(0, 0, 0, 0));
+  margin: 10px 0;
+  opacity: 0.5;
+}
+
+/* Texto de lingotes destacado */
+.lingotes-score {
+  color: var(--gold);
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin: 5px 0;
+  text-align: left; 
+  text-shadow: 0 0 5px rgba(245, 211, 0, 0.5);
+}
+
+/* --- CHECKBOX PERSONALIZADO (Más grande y alineado) --- */
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  margin-bottom: 5px;
+}
+
+/* Hacemos el checkbox nativo más grande (solución rápida para móvil) */
+.checkbox-container input[type="checkbox"] {
+  transform: scale(1.5); /* Aumenta tamaño */
+  accent-color: var(--neon-cyan); /* Color del check en navegadores modernos */
+  margin: 0;
+}
+
+.label-text {
+  font-size: 1rem;
+  color: var(--text-color);
 }

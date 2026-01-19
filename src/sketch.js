@@ -205,10 +205,14 @@ export const sketch = new p5((p) => {
       vx = 0;
       spawnEvery = 50;
       sessionCoins = 0; //resetear monedas de la sesión
-      robotPrase = "Recoge monedas y te cuento un chiste.";
 
       // Actualizar nombre de usuario actual
       const data = await GameStorage.getData();
+      if(data.jokesEnabled){
+        robotPrase = "Recoge monedas y te cuento un chiste.";
+      } else {
+        robotPrase = "Coge monedas para ganar lingotes.";
+      }
       currentUsername = data.username;
 
       // ACTUALIZAR PERSONAJE
@@ -325,23 +329,48 @@ export const sketch = new p5((p) => {
 
   // Función para pedir chistes
   async function getNewJoke() {
+    //Conseguir preferencias de chistes
+    const data = await GameStorage.getData();
+
+    // Si los chistes están deshabilitados, salir
+    if(!data.jokesEnabled) {
+      const frasesGenericas = [
+        "¡Sigue así, campeón!",
+        "¡Eres imparable!",
+        "¡Buen trabajo!",
+        "¡Sigue recogiendo monedas!",
+        "¡Eres una máquina de lingotes!"
+      ];
+      // Se elige una frase al azar
+      robotPrase = p.random(frasesGenericas);
+      return;
+    }
+    // Construir URL según categoría seleccionada
+    // Si no hay categoría, usar "Any"
+    let category = data.jokeCategory || "Any";
+  
     //url de la API
-    const url = "https://v2.jokeapi.dev/joke/Any?lang=es&blacklistFlags=nsfw,religious,political,racist,sexist";
+    const url = `https://v2.jokeapi.dev/joke/${category}?lang=es&blacklistFlags=nsfw,religious,political,racist,sexist`;
 
     try {
       //hacer la petición
       const response = await fetch(url);
-      const data = await response.json();
+      const apiData = await response.json();
+
+      if(apiData.error) {
+        console.log("Error en la API de chistes:", apiData);
+        robotPrase = "No tengo chistes ahora mismo.";
+        return;
+      }
 
       //Si hay chiste, actualizar la frase
-      if(data.type === "single") {
-          robotPrase = data.joke;
-        } else if (data.type === "twopart") {
+      if(apiData.type === "single") {
+          robotPrase = apiData.joke;
+        } else if (apiData.type === "twopart") {
           //chiste de dos partes
           //usamos \n para salto de línea
-          robotPrase = `${data.setup}\n${data.delivery}`;
+          robotPrase = `${apiData.setup}\n${apiData.delivery}`;
         } else {
-        console.log("No hay data o data.joke:", data);
         robotPrase = "No tengo chistes ahora mismo.";
       }
     } catch (error) {

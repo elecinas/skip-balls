@@ -13,7 +13,9 @@ const defaultData = {
   highScores: [],
   characters: CHARACTERS_DATA,
   unlockedCharacters: [0], 
-  selectedCharacter: 0
+  selectedCharacter: 0,
+  jokesEnabled: true, // Habilitar/deshabilitar chistes
+  jokeCategory: "Any" // "Any", "Programming", "Misc", "Dark", "Pun", "Spooky", "Christmas"
 };
 
 const KEY = 'skip_balls_v2'; // Clave en localStorage
@@ -68,6 +70,14 @@ export const GameStorage = {
       data.highScores = data.highScores.slice(0, 10);
     }
     
+    await this.saveData(data);
+  },
+
+  // Actualizar configuración de chistes
+  async updateJokeSettings(enabled, category){
+    const data = await this.getData();
+    data.jokesEnabled = enabled;
+    data.jokeCategory = category;
     await this.saveData(data);
   }
 };

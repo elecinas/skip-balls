@@ -1,5 +1,5 @@
 import "./style.css";
-import "./sketch.js"; 
+import "./sketch.js";
 import { GameStorage } from "./storage.js";
 
 const gameView = document.getElementById("gameView");
@@ -11,7 +11,8 @@ const usernameInput = document.getElementById("usernameInput");
 const lingotesDisplay = document.getElementById("lingotesDisplay");
 const characterList = document.getElementById("characterList");
 const rankingList = document.getElementById("rankingList");
-
+const checkJokes = document.getElementById("checkJokes");
+const selectJokeType = document.getElementById("selectJokeType");
 
 function showGame() {
   settingsView.classList.add("hidden");
@@ -26,10 +27,14 @@ async function showSettings() {
   usernameInput.value = data.username;
   lingotesDisplay.innerText = data.lingotes;
 
-  
+  // Carga estado de chistes
+  checkJokes.checked = data.jokesEnabled;
+  selectJokeType.value = data.jokeCategory;
+  selectJokeType.disabled = !data.jokesEnabled; // Habilitar/Deshabilitar selector según checkbox
+
   // Personajes
   characterList.innerHTML = ""; // Limpiar lista
-  
+
   data.characters.forEach((char) => {
     const isUnlocked = data.unlockedCharacters.includes(char.id);
     const isSelected = data.selectedCharacter === char.id;
@@ -37,7 +42,7 @@ async function showSettings() {
     // Crear el contenedor de la tarjeta
     const charDiv = document.createElement("div");
     charDiv.classList.add("character-item");
-    
+
     // Aplicar clases de estado
     if (isSelected) charDiv.classList.add("selected");
     if (!isUnlocked) charDiv.classList.add("locked");
@@ -56,31 +61,32 @@ async function showSettings() {
     charDiv.innerHTML = htmlContent;
 
     // EVENTO DE CLICK (Seleccionar o Comprar)
-    charDiv.addEventListener("click", async () => { // <--- async en el callback
-  if (isUnlocked) {
-    // -- SELECCIONAR --
-    data.selectedCharacter = char.id;
-    await GameStorage.saveData(data); // <--- await
-    showSettings(); 
-  } else {
-    if (confirm(`¿Desbloquear a ${char.name} por ${char.cost} lingotes?`)) {
-      // -- COMPRAR --
-      const freshData = await GameStorage.getData(); 
-
-      if (freshData.lingotes >= char.cost) {
-        freshData.lingotes -= char.cost;
-        freshData.unlockedCharacters.push(char.id);
-        freshData.selectedCharacter = char.id;
-
-        await GameStorage.saveData(freshData); // <--- await
-        alert(`¡${char.name} desbloqueado!`);
+    charDiv.addEventListener("click", async () => {
+      // <--- async en el callback
+      if (isUnlocked) {
+        // -- SELECCIONAR --
+        data.selectedCharacter = char.id;
+        await GameStorage.saveData(data); // <--- await
         showSettings();
       } else {
-        alert("No tienes suficientes lingotes 🧱");
+        if (confirm(`¿Desbloquear a ${char.name} por ${char.cost} lingotes?`)) {
+          // -- COMPRAR --
+          const freshData = await GameStorage.getData();
+
+          if (freshData.lingotes >= char.cost) {
+            freshData.lingotes -= char.cost;
+            freshData.unlockedCharacters.push(char.id);
+            freshData.selectedCharacter = char.id;
+
+            await GameStorage.saveData(freshData); // <--- await
+            alert(`¡${char.name} desbloqueado!`);
+            showSettings();
+          } else {
+            alert("No tienes suficientes lingotes 🧱");
+          }
+        }
       }
-    }
-  }
-});
+    });
 
     characterList.appendChild(charDiv);
   });
@@ -114,6 +120,18 @@ usernameInput.addEventListener("input", (e) => {
 btnSettings.addEventListener("click", showSettings);
 btnCloseSettings.addEventListener("click", showGame);
 btnCloseX.addEventListener("click", showGame);
+
+// Activar/desactivar chistes
+checkJokes.addEventListener("change", (e) => {
+  const isEnabled = e.target.checked;
+  selectJokeType.disabled = !isEnabled; // Habilitar/Deshabilitar selector
+  GameStorage.updateJokeSettings(isEnabled, selectJokeType.value);
+});
+
+// Cambiar tipo de chiste
+selectJokeType.addEventListener("change", (e) => {
+  GameStorage.updateJokeSettings(checkJokes.checked, e.target.value);
+})
 
 // Iniciamos por defecto: juego
 showGame();

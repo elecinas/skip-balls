@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -29,11 +29,35 @@
           <h1>Configuración</h1>
 
           <div class="user-settings">
-            <label>Nombre:</label>
-            <input type="text" id="usernameInput" />
-            <p style="color: #f5d300; font-weight: bold; font-size: 1.2rem">
-              Lingotes: <span id="lingotesDisplay">0</span> 🧱
-            </p>
+            <div class="settings-group">
+              <label class="input-label">Nombre:</label>
+              <input type="text" id="usernameInput" class="cyber-input" />
+              <p class="lingotes-score">
+                Lingotes: <span id="lingotesDisplay">0</span> 🧱
+              </p>
+            </div>
+
+            <hr class="cyber-separator" />
+            <div class="settings-group">
+              <h3>Configuración del Robot</h3>
+              <label class="checkbox-container">
+                <input type="checkbox" id="checkJokes" />
+                <span class="checkmark"></span>
+                <span class="label-text">Habilitar chistes</span>
+              </label>
+              <label class="input-label">Categoría de chistes:</label>
+              <select
+                id="selectJokeType"
+                class="cyber-input"
+              >
+                <option value="Any">Cualquiera</option>
+                <option value="Programming">Programación</option>
+                <option value="Pun">Juegos de palabras</option>
+                <option value="Spooky">De miedo</option>
+                <option value="Christmas">Navidad</option>
+                <option value="Misc">Varios</option>
+              </select>
+            </div>
           </div>
 
           <div id="characterList"></div>
