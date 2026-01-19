@@ -1,6 +1,6 @@
 # 🤖 Skip Balls - Cyberpunk Edition
 
-> Un juego arcade de habilidad basado en acelerómetro, desarrollado con tecnologías web modernas y portado a móvil nativo.
+> Un juego arcade de habilidad basado en sensor de orientación, desarrollado con tecnologías web modernas y portado a móvil nativo.
 
 ![Captura juego](assets/screenshot_1.jpg)
 ![Captura final de juego](assets/screenshot_2.jpg)
@@ -14,12 +14,16 @@ La estética tiene un estilo **Cyberpunk/Neon**, presentando un fondo oscuro, lu
 
 ### ✨ Características principales
 
-* **🕹 Control por Movimiento:** Utiliza el giroscopio/acelerómetro del móvil. Inclina el teléfono para mover al personaje.
+* **🕹 Control por Movimiento:** Utiliza el sensor de orientación (DeviceOrientation) del móvil. Inclina el teléfono para mover al personaje.
 * **🎨 Estética Neon:** canvas y estilos con efectos de `shadowBlur` para simular luces de neón.
 * **💰 Economía de Juego:** * Recoge monedas durante la partida.
     * **30 Monedas = 1 Lingote (🧱)**.
     * Usa lingotes para desbloquear nuevos robots en la tienda.
 * **🛒 Tienda de Personajes:** Puedes comprar dos skins más de robot: Anthony y Roy, cada uno con su propio coste.
+* **🤖 Sistema de Humor (JokeAPI):** El robot tiene personalidad propia.
+    * Contará un chiste en la pantalla de *Game Over*.
+    * **Categorías configurables:** Elige en ajustes, si quieres leer chistes. Y si, sí quieres, puedes elegir entre chistes de Programación, Terror, Navidad, Juegos de palabras, etc.
+    * **Modo Offline:** Incluye un sistema de respaldo local para que el robot nunca se quede callado, incluso sin internet.
 * **🏆 Sistema de Ranking:** Guarda localmente las 10 mejores puntuaciones.
 * **📱 Diseño Responsivo:** Interfaz adaptada a cualquier pantalla móvil, únicamente jugable en vertical.
 
@@ -30,8 +34,9 @@ Este proyecto utiliza un stack moderno para el desarrollo híbrido:
 * **[Vite](https://vitejs.dev/):** Nuevo entorno de desarrollo ultrarrápido y bundler.
 * **[p5.js](https://p5js.org/):** Librería principal para el renderizado del Canvas, físicas y lógica del juego.
 * **[Capacitor](https://capacitorjs.com/):** Para empaquetar la aplicación web como una app nativa (Android) y acceder a sensores del dispositivo.
+* * **[JokeAPI](https://jokeapi.dev/):** API REST para obtener contenido dinámico (chistes) mediante `fetch` asíncrono.
 * **HTML5 / CSS3:** Diseño de la UI (menús, tienda) con Flexbox y Grid.
-* **Local Storage:** Persistencia de datos (monedas, personajes desbloqueados y récords).
+* **Capacitor Preferences:** Persistencia de datos (monedas, personajes desbloqueados y récords).
 
 ## 🚀 Instalación y Desarrollo Local
 
@@ -70,7 +75,7 @@ Para generar la aplicación nativa usando Capacitor:
 
 3.  **Sincronizar los cambios:**
     ```bash
-    npx cap sync
+    npx cap sync android
     ```
 
 4.  **Abrir Android Studio:**
@@ -87,13 +92,27 @@ Para generar la aplicación nativa usando Capacitor:
 4.  Esquivar las bolas rojas (💥).
 5.  Recoger las bolas doradas (💰).
 6.  Si mueres, tus monedas se convertirán en lingotes (cada 30 monedas un lingote), luego se pierden.
-7.  Tocar el botón **⚙️ (Engranaje)** para ir a la tienda y gastar los lingotes.
+7.  **Leer el chiste:** En la pantalla de *Game Over*, aparecerá un chiste temático como recompensa (si está activado).
+8.  Tocar el botón **⚙️ (Engranaje)** para ir a la tienda, gastar los lingotes o **configurar la categoría de los chistes**.
 
 ## 📢 Créditos y Atribuciones
 
 * **Ilustraciones de Robots:** [Freepik](https://www.freepik.com)
+* * **API de Chistes:** [JokeAPI (Sv443)](https://jokeapi.dev/)
 * **Código y Desarrollo:** Esther Lecina
 * **Herramientas de Apoyo:**
     * Este proyecto ha utilizado **IA** como asistente de programación para:
         * Resolución de bugs y depuración.
         * Generación y refinamiento de estilos CSS.
+
+## 📄 Licencia
+
+© 2025 Esther Lecina. Todos los derechos reservados.
+
+Este proyecto se distribuye bajo una **licencia propietaria**.  
+El código, la lógica y el diseño no pueden copiarse, modificarse ni redistribuirse sin permiso explícito de la autora.
+
+Los recursos gráficos (robots/personajes) pertenecen a **Freepik** y se utilizan bajo sus condiciones de atribución.
+
+Consulta el archivo [`LICENSE`](./LICENSE) para más información.
+
