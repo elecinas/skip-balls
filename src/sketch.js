@@ -209,9 +209,9 @@ export const sketch = new p5((p) => {
       // Actualizar nombre de usuario actual
       const data = await GameStorage.getData();
       if(data.jokesEnabled){
-        robotPrase = "Recoge monedas y te cuento un chiste.";
+        robotPrase = "Collect coins to read a joke";
       } else {
-        robotPrase = "Coge monedas para ganar lingotes.";
+        robotPrase = "Let's go for the High Score!";
       }
       currentUsername = data.username;
 
@@ -327,22 +327,24 @@ export const sketch = new p5((p) => {
     // p.circle(player.x, player.y, player.size);
   }
 
+  //-- CHISTES OFFLINE --
+  const BACKUP_JOKES = [
+    "Why do programmers prefer dark mode?\nBecause light attracts bugs.",
+    "I'm not lazy, I'm just in energy saving mode.",
+    "There are 10 types of people: those who understand binary, and those who don't.",
+    "My code doesn't work, I have no idea why.\nMy code works, I have no idea why.",
+    "Simulation status: 99% complete.",
+    "Searching for intelligence... 404 Not Found."
+  ];
+
   // Función para pedir chistes
   async function getNewJoke() {
     //Conseguir preferencias de chistes
-    const data = await GameStorage.getData();
+    const dataSettings = await GameStorage.getData();
 
     // Si los chistes están deshabilitados, salir
-    if(!data.jokesEnabled) {
-      const frasesGenericas = [
-        "¡Sigue así, campeón!",
-        "¡Eres imparable!",
-        "¡Buen trabajo!",
-        "¡Sigue recogiendo monedas!",
-        "¡Eres una máquina de lingotes!"
-      ];
-      // Se elige una frase al azar
-      robotPrase = p.random(frasesGenericas);
+    if(!dataSettings.jokesEnabled) {
+      robotPrase = "Coge monedas para ganar lingotes.";
       return;
     }
     // Construir URL según categoría seleccionada
@@ -350,7 +352,7 @@ export const sketch = new p5((p) => {
     let category = data.jokeCategory || "Any";
   
     //url de la API
-    const url = `https://v2.jokeapi.dev/joke/${category}?lang=es&blacklistFlags=nsfw,religious,political,racist,sexist`;
+    const url = `https://v2.jokeapi.dev/joke/${category}?blacklistFlags=nsfw,religious,political,racist,sexist`;
 
     try {
       //hacer la petición
@@ -358,8 +360,8 @@ export const sketch = new p5((p) => {
       const apiData = await response.json();
 
       if(apiData.error) {
-        console.log("Error en la API de chistes:", apiData);
-        robotPrase = "No tengo chistes ahora mismo.";
+        console.log("API Error. Using backup joke.");
+        useBackupJoke();
         return;
       }
 
@@ -377,5 +379,10 @@ export const sketch = new p5((p) => {
       console.error("Error al obtener chiste:", error);
       robotPrase = "Error al obtener chiste.";
     }
+  }
+
+  function useBackupJoke() {
+    const indice = Math.floor(p.random(0, BACKUP_JOKES.length));
+    robotPrase = BACKUP_JOKES[indice];
   }
 });
