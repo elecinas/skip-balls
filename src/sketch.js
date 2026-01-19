@@ -8,6 +8,9 @@ export const sketch = new p5((p) => {
   let sessionCoins = 0; // Monedas ganadas en la sesión actual
   let currentUsername = "Jugador";
 
+  //Variable para la frase del robot
+  let robotPrase = "Recoge monedas y te cuento un chiste.";
+
   // Variables para orientación
   // alpha: rotación alrededor del eje Z (0..360)
   // beta: inclinación adelante/atrás (-180..180)
@@ -15,7 +18,7 @@ export const sketch = new p5((p) => {
   let degrees = { alpha: 0, beta: 0, gamma: 0 };
   let player = { x: 0, y: 0, size: 70 };
   let vx = 0;
-  let floorHeight = 100;
+  let floorHeight = 150;
 
   // Partículas del cielo
   let particles = [];
@@ -176,7 +179,18 @@ export const sketch = new p5((p) => {
     p.drawingContext.shadowBlur = 15;
     p.drawingContext.shadowColor = COLORS.neon;
     p.line(0, p.height - floorHeight, p.width, p.height - floorHeight);
-    
+
+    // Dibujar frase del robot
+    p.noStroke();
+    p.drawingContext.shadowBlur = 0;
+    p.fill(COLORS.text);
+    p.textAlign(p.CENTER, p.CENTER);
+    p.textSize(18);
+    p.textStyle(p.NORMAL);
+
+    // (x, y, ancho_caja, alto_caja)
+    p.text(robotPrase, 20, p.height - floorHeight + 20, p.width - 40, 100);
+
     // Resetear efectos de dibujo para el jugador
     p.drawingContext.shadowBlur = 0;
     p.noStroke();
@@ -191,6 +205,7 @@ export const sketch = new p5((p) => {
       vx = 0;
       spawnEvery = 50;
       sessionCoins = 0; //resetear monedas de la sesión
+      robotPrase = "Recoge monedas y te cuento un chiste.";
 
       // Actualizar nombre de usuario actual
       const data = await GameStorage.getData();
@@ -250,6 +265,7 @@ export const sketch = new p5((p) => {
           // Es una moneda: sumar monedas
           sessionCoins++;
           particles.splice(i, 1); // eliminar partícula
+          getNewJoke(); // Pedir nuevo chiste
           //TODO: sonido moneda
           continue;
         }
@@ -305,5 +321,32 @@ export const sketch = new p5((p) => {
     }
     // p.fill(100);
     // p.circle(player.x, player.y, player.size);
+  }
+
+  // Función para pedir chistes
+  async function getNewJoke() {
+    //url de la API
+    const url = "https://v2.jokeapi.dev/joke/Any?lang=es&blacklistFlags=nsfw,religious,political,racist,sexist";
+
+    try {
+      //hacer la petición
+      const response = await fetch(url);
+      const data = await response.json();
+
+      //Si hay chiste, actualizar la frase
+      if(data.type === "single") {
+          robotPrase = data.joke;
+        } else if (data.type === "twopart") {
+          //chiste de dos partes
+          //usamos \n para salto de línea
+          robotPrase = `${data.setup}\n${data.delivery}`;
+        } else {
+        console.log("No hay data o data.joke:", data);
+        robotPrase = "No tengo chistes ahora mismo.";
+      }
+    } catch (error) {
+      console.error("Error al obtener chiste:", error);
+      robotPrase = "Error al obtener chiste.";
+    }
   }
 });
