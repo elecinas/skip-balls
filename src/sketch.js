@@ -2,6 +2,7 @@ import { GameStorage, CHARACTERS_DATA } from "./storage";
 import { motionRequestPermission, motionStartOrientation } from "./motion";
 import { KeepAwake } from "@capacitor-community/keep-awake";
 import { Particle } from "./particle";
+import { fetchNewJoke } from "./jokes";
 
 export const sketch = new p5((p) => {
   let isGameOver = false; // Estado del juego
@@ -309,7 +310,7 @@ export const sketch = new p5((p) => {
           // Es una moneda: sumar monedas
           sessionCoins++;
           particles.splice(i, 1); // eliminar partícula
-          getNewJoke(); // Pedir nuevo chiste
+          updateRobotWithJoke(); // Pedir nuevo chiste
           //TODO: sonido moneda
           continue;
         }
@@ -369,66 +370,19 @@ export const sketch = new p5((p) => {
       p.fill(100);
       p.circle(player.x, player.y, player.size);
     }
-    // p.fill(100);
-    // p.circle(player.x, player.y, player.size);
   }
 
-  //-- CHISTES OFFLINE --
-  const BACKUP_JOKES = [
-    "Why do programmers prefer dark mode?\nBecause light attracts bugs.",
-    "I'm not lazy, I'm just in energy saving mode.",
-    "There are 10 types of people: those who understand binary, and those who don't.",
-    "My code doesn't work, I have no idea why.\nMy code works, I have no idea why.",
-    "Simulation status: 99% complete.",
-    "Searching for intelligence... 404 Not Found.",
-  ];
-
-  // Función para pedir chistes
-  async function getNewJoke() {
-    //Conseguir preferencias de chistes
-    const dataSettings = await GameStorage.getData();
-
+  // Función para obtener un nuevo chiste de la API
+  async function updateRobotWithJoke(){
+    const data = await GameStorage.getData();
     // Si los chistes están deshabilitados, salir
-    if (!dataSettings.jokesEnabled) {
+    if (!data.jokesEnabled) {
       robotPrase = "disabled";
       return;
     }
-    // Construir URL según categoría seleccionada
-    // Si no hay categoría, usar "Any"
-    let category = dataSettings.jokeCategory || "Any";
-
-    //url de la API
-    const url = `https://v2.jokeapi.dev/joke/${category}?blacklistFlags=nsfw,religious,political,racist,sexist`;
-
-    try {
-      //hacer la petición
-      const response = await fetch(url);
-      const apiData = await response.json();
-
-      if (apiData.error) {
-        console.log("API Error. Using backup joke.");
-        useBackupJoke();
-        return;
-      }
-
-      //Si hay chiste, actualizar la frase
-      if (apiData.type === "single") {
-        robotPrase = apiData.joke;
-      } else if (apiData.type === "twopart") {
-        //chiste de dos partes
-        //usamos \n para salto de línea
-        robotPrase = `${apiData.setup}\n${apiData.delivery}`;
-      } else {
-        robotPrase = "No tengo chistes ahora mismo.";
-      }
-    } catch (error) {
-      console.error("Error al obtener chiste:", error);
-      robotPrase = "Error al obtener chiste.";
-    }
-  }
-
-  function useBackupJoke() {
-    const indice = Math.floor(p.random(0, BACKUP_JOKES.length));
-    robotPrase = BACKUP_JOKES[indice];
+    // obtener chiste de la api
+    const jokeText = await fetchNewJoke(data.jokeCategory);
+    // Actualizar frase del robot
+    robotPrase = jokeText;
   }
 });
