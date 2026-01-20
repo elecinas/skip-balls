@@ -22,6 +22,21 @@
         </button>
       </div>
 
+      <!-- Vista pantalla de inicio -->
+      <div id="startView" class="view overlay-screen">
+        <h1 class="game-title">Skip Balls</h1>
+        <p class="subtitle">Cyberpunk Edition</p>
+
+        <div class="instructions">
+          <p>Inclina el dispositivo para mover el robot</p>
+          <p>Recoge monedas</p>
+          <p>Esquiva las bolas rojas</p>
+          <button id="btnStartGame" class="cyber-button pulse-anim">
+            Comenzar
+          </button>
+        </div>
+      </div>
+
       <!-- Vista configuración -->
       <div id="settingsView" class="view hidden">
         <div class="panel">
@@ -46,10 +61,7 @@
                 <span class="label-text">Habilitar chistes</span>
               </label>
               <label class="input-label">Categoría de chistes:</label>
-              <select
-                id="selectJokeType"
-                class="cyber-input"
-              >
+              <select id="selectJokeType" class="cyber-input">
                 <option value="Any">Cualquiera</option>
                 <option value="Programming">Programación</option>
                 <option value="Pun">Juegos de palabras</option>

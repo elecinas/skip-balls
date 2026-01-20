@@ -4,8 +4,16 @@ import { KeepAwake } from "@capacitor-community/keep-awake";
 import { Particle } from "./particle";
 import { fetchNewJoke } from "./jokes";
 
+//-- VARIABLE GLOBAL DE ESTADO DEL JUEGO --
+//Fuera de p5 para exportar una función para cambiarlas desde main.js
+let gameState = "START"; // START, PLAYING, GAMEOVER
+
+// Función para cambiar estado del juego desde main.js
+export function setGameState(newState) {
+  gameState = newState;
+}
+
 export const sketch = new p5((p) => {
-  let isGameOver = false; // Estado del juego
   let sessionCoins = 0; // Monedas ganadas en la sesión actual
   let currentUsername = "Jugador";
 
@@ -96,156 +104,77 @@ export const sketch = new p5((p) => {
   };
 
   p.draw = () => {
-    // Revisamos cada 30 frames (aprox 0.5 seg) si ha cambiado el personaje
+    // --- DIBUJAR FONDO ---
+    p.background(COLORS.bg);
+
+    // ========================================
+    // --- LÓGICA DE ESTADO DEL JUEGO ---
+    // ========================================
+
+    // --- ESTADO 1: INICIO ---
+    if (gameState === "START") {
+      player.x = p.width / 2;
+      drawPlayer();
+    }
+
+    // --- ESTADO 2: GAME OVER ---
+    if (gameState === "GAMEOVER") {
+      for (let particle of particles) particle.draw();
+      drawPlayer();
+      drawGameOverScreen();
+      return;
+    }
+
+    // --- ESTADO 3: JUGANDO ---
+
+    // Capa de partículas
+    spawnParticles();
+    updateAndDrawParticles();
+    
+    // Suelo
+    drawFloor();
+
+    // Revisamos cada 30 frames (aprox 0.5 seg)
+    // skin y chistes
     if (p.frameCount % 30 === 0) {
       // Actualizar skin actual
       GameStorage.getData().then((data) => {
-        if (charImages[data.selectedCharacter]) {
+        if (charImages[data.selectedCharacter])
           currentSkin = data.selectedCharacter;
-        }
-
-        //actualizzar estado de chistes
-        if (!data.jokesEnabled) {
-          robotPrase = "disabled";
-        } else if (data.jokesEnabled && robotPrase === "disabled") {
-          robotPrase = "Collect coins to read a joke";
-        }
+        if (!data.jokesEnabled) robotPrase = "disabled";
       });
     }
 
-    p.background(COLORS.bg);
-
-    // -- DIBUJAR PARTÍCULAS  --
-    if (!isGameOver) {
-      // Durante el juego, seguir creando y moviendo partículas
-      spawnParticles();
-      updateAndDrawParticles();
-    } else {
-      // Dibujar partículas estáticas en game over
-      for (let particle of particles) {
-        particle.draw();
-      }
-    }
-
-    // --- DIBUJAR SUELO ---
-
-    // El bloque del suelo (Gris oscuro metálico)
-    p.noStroke();
-    p.fill(COLORS.floor);
-    p.rect(0, p.height - floorHeight, p.width, floorHeight);
-
-    // Línea de neón superior
-    p.stroke(COLORS.neon);
-    p.strokeWeight(4);
-    // Efecto de brillo en la línea
-    p.drawingContext.shadowBlur = 15;
-    p.drawingContext.shadowColor = COLORS.neon;
-    p.line(0, p.height - floorHeight, p.width, p.height - floorHeight);
-
-    // Resetear efectos
-    p.drawingContext.shadowBlur = 0;
-    p.noStroke();
-
-    // --- DIBUJAR JUGADOR ---
+    // Jugador
     drawPlayer();
 
-
-    // =======================================================
-    // INTERFAZ (HUD O GAME OVER)
-    // Esto se dibuja ENCIMA del juego
-    // =======================================================
-
-    if (!isGameOver) {
-      // Sigue el juego
-
-      //Sistema de puntuación:
-      // --- HUD (PUNTUACIÓN) ---
-      p.fill(COLORS.neon);
-      p.textAlign(p.LEFT, p.TOP);
-      p.textSize(24);
-      p.textStyle(p.BOLD);
-      // Sombra cian
-      p.drawingContext.shadowBlur = 10;
-      p.drawingContext.shadowColor = COLORS.neon;
-      p.text(`${currentUsername}: ${sessionCoins} $`, 20, 50);
-      p.drawingContext.shadowBlur = 0; // Reset sombra
-    } else {
-      // PANTALLA DE GAME OVER
-      //fondo Game Over
-      p.fill(20, 0, 0, 150);
-      p.rectMode(p.CORNER);
-      p.rect(0, 0, p.width, p.height);
-      
-      // -- TEXTO GAME OVER --
-      p.fill(COLORS.danger);
-      p.textSize(40);
-      p.textStyle(p.BOLD);
-      p.textAlign(p.CENTER, p.CENTER);
-      p.text("SYSTEM FAILURE", p.width / 2, p.height / 2 - 140);
-
-      // Quitamos brillo para el resto
-      p.drawingContext.shadowBlur = 0;
-
-      // Resumen de la partida
-      p.fill(COLORS.text);
-      p.textSize(24);
-      p.textStyle(p.NORMAL);
-      p.text(`Monedas: ${sessionCoins}`, p.width / 2, p.height / 2 - 80);
-
-      // Cálculo visual de lingotes
-      const lingotesEarned = Math.floor(sessionCoins / 30);
-      p.fill(COLORS.gold); // Dorado
-      p.text(
-        `Lingotes ganados: +${lingotesEarned}`,
-        p.width / 2,
-        p.height / 2 - 40
-      );
-
-      p.fill(100);
-      p.textSize(16);
-      p.text("(30 monedas = 1 lingote)", p.width / 2, p.height / 2 - 10);
-
-      // Texto parpadeante
-      if (p.frameCount % 60 < 30) {
-        p.fill(COLORS.neon);
-        p.textSize(20);
-        p.text("> TOCA PARA REINICIAR <", p.width / 2, p.height / 2 + 50);
-      }
-
-      //-- PINTA EL CHISTE AL FINAL --
-      if(robotPrase !== "disabled") {
-        //coordenadas para todo
-        let boxX = p.width / 2;
-        let boxY = p.height / 2 + 170;
-        let boxW = p.width - 60;
-        let boxH = 110;
-         
-        // Fondo del recuadro
-        p.rectMode(p.CENTER);
-        p.noStroke();
-        p.fill(30, 35, 40, 200); // Fondo semitransparente
-        p.rect(boxX, boxY, boxW, boxH, 15 /*redondeo*/);
-
-        // Texto del chiste
-        p.fill(COLORS.text);
-        p.textSize(16);
-        p.textStyle(p.ITALIC);
-        p.textAlign(p.CENTER, p.CENTER);
-        p.text(robotPrase, boxX, boxY, boxW - 20, boxH - 10);
-
-        p.rectMode(p.CORNER);
-      }
-    }
+    // --- HUD (PUNTUACIÓN) ---
+    p.fill(COLORS.neon);
+    p.textAlign(p.LEFT, p.TOP);
+    p.textSize(24);
+    p.textStyle(p.BOLD);
+    // Sombra cian
+    p.drawingContext.shadowBlur = 10;
+    p.drawingContext.shadowColor = COLORS.neon;
+    p.text(`${currentUsername}: ${sessionCoins} $`, 20, 50);
+    p.drawingContext.shadowBlur = 0; // Reset sombra
   };
 
   p.mousePressed = async () => {
-    if (isGameOver) {
-      // Resetear el juego
-      particles = [];
+    if(gameState === "GAMEOVER") {
+      resetGame();
+    }
+  };
+
+  async function resetGame() {
+    particles = [];
       player.x = p.width / 2;
       vx = 0;
       spawnEvery = 50;
       sessionCoins = 0; //resetear monedas de la sesión
+
+      //volver a jugar
+      gameState = "PLAYING";
 
       // Actualizar nombre de usuario actual
       const data = await GameStorage.getData();
@@ -258,10 +187,7 @@ export const sketch = new p5((p) => {
 
       // ACTUALIZAR PERSONAJE
       currentSkin = charImages[data.selectedCharacter];
-
-      isGameOver = false;
-    }
-  };
+  }
 
   function spawnParticles() {
     //si no es el frame adecuado, salir
@@ -316,16 +242,7 @@ export const sketch = new p5((p) => {
         }
         //CASO 2: partícula dañina
         if (particle.type === "damage") {
-          isGameOver = true;
-          // Dividimos entre 30 y quitamos decimales
-          const lingotesEarned = Math.floor(sessionCoins / 30);
-
-          if (lingotesEarned > 0) {
-            // Guardar total de lingotes
-            GameStorage.addLingotes(lingotesEarned);
-            // Ranking
-            GameStorage.saveRankingEntry(currentUsername, lingotesEarned);
-          }
+          handleGameOver();
         }
       }
 
@@ -372,8 +289,26 @@ export const sketch = new p5((p) => {
     }
   }
 
+  function drawFloor() {
+    // Rectángulo del suelo
+    p.noStroke();
+    p.fill(COLORS.floor);
+    p.rect(0, p.height - floorHeight, p.width, floorHeight);
+
+    // Línea de neón superior
+    p.stroke(COLORS.neon);
+    p.strokeWeight(4);
+    p.drawingContext.shadowBlur = 15;
+    p.drawingContext.shadowColor = COLORS.neon;
+    p.line(0, p.height - floorHeight, p.width, p.height - floorHeight);
+
+    // Resetear efectos
+    p.drawingContext.shadowBlur = 0;
+    p.noStroke();
+  }
+
   // Función para obtener un nuevo chiste de la API
-  async function updateRobotWithJoke(){
+  async function updateRobotWithJoke() {
     const data = await GameStorage.getData();
     // Si los chistes están deshabilitados, salir
     if (!data.jokesEnabled) {
@@ -384,5 +319,86 @@ export const sketch = new p5((p) => {
     const jokeText = await fetchNewJoke(data.jokeCategory);
     // Actualizar frase del robot
     robotPrase = jokeText;
+  }
+
+  function handleGameOver() {
+    gameState = "GAMEOVER";
+
+    //calcular y guardar lingotes
+    const lingotesEarned = Math.floor(sessionCoins / 30);
+    if (lingotesEarned > 0) {
+      GameStorage.addLingotes(lingotesEarned);
+      // Ranking
+      GameStorage.saveRankingEntry(currentUsername, lingotesEarned);
+    }
+    //Pedir chiste
+    updateRobotWithJoke();
+  }
+
+  function drawGameOverScreen() {
+    //fondo semitransparente
+    p.fill(20, 0, 0, 150);
+    p.rectMode(p.CORNER);
+    p.rect(0, 0, p.width, p.height);
+
+    // -- TEXTO GAME OVER --
+    p.fill(COLORS.danger);
+    p.textSize(40);
+    p.textStyle(p.BOLD);
+    p.textAlign(p.CENTER, p.CENTER);
+    p.text("SYSTEM FAILURE", p.width / 2, p.height / 2 - 140);
+
+    // Quitamos brillo para el resto
+    p.drawingContext.shadowBlur = 0;
+
+    // Resumen de la partida
+    p.fill(COLORS.text);
+    p.textSize(24);
+    p.textStyle(p.NORMAL);
+    p.text(`Monedas: ${sessionCoins}`, p.width / 2, p.height / 2 - 80);
+
+    // Cálculo visual de lingotes
+    const lingotesEarned = Math.floor(sessionCoins / 30);
+    p.fill(COLORS.gold); // Dorado
+    p.text(
+      `Lingotes ganados: +${lingotesEarned}`,
+      p.width / 2,
+      p.height / 2 - 40,
+    );
+
+    p.fill(100);
+    p.textSize(16);
+    p.text("(30 monedas = 1 lingote)", p.width / 2, p.height / 2 - 10);
+
+    // Texto parpadeante
+    if (p.frameCount % 60 < 30) {
+      p.fill(COLORS.neon);
+      p.textSize(20);
+      p.text("> TOCA PARA REINICIAR <", p.width / 2, p.height / 2 + 50);
+    }
+
+    //-- PINTA EL CHISTE AL FINAL --
+    if (robotPrase !== "disabled") {
+      //coordenadas para todo
+      let boxX = p.width / 2;
+      let boxY = p.height / 2 + 170;
+      let boxW = p.width - 60;
+      let boxH = 110;
+
+      // Fondo del recuadro
+      p.rectMode(p.CENTER);
+      p.noStroke();
+      p.fill(30, 35, 40, 200); // Fondo semitransparente
+      p.rect(boxX, boxY, boxW, boxH, 15);
+
+      // Texto del chiste
+      p.fill(COLORS.text);
+      p.textSize(16);
+      p.textStyle(p.ITALIC);
+      p.textAlign(p.CENTER, p.CENTER);
+      p.text(robotPrase, boxX, boxY, boxW - 20, boxH - 10);
+
+      p.rectMode(p.CORNER);
+    }
   }
 });

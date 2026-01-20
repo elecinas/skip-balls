@@ -1,6 +1,7 @@
 import "./style.css";
-import "./sketch.js";
+import { sketch, setGameState } from "./sketch.js";
 import { GameStorage } from "./storage.js";
+import { motionRequestPermission } from "./motion.js";
 
 const gameView = document.getElementById("gameView");
 const settingsView = document.getElementById("settingsView");
@@ -13,6 +14,17 @@ const characterList = document.getElementById("characterList");
 const rankingList = document.getElementById("rankingList");
 const checkJokes = document.getElementById("checkJokes");
 const selectJokeType = document.getElementById("selectJokeType");
+const startView = document.getElementById("startView");
+const btnStartGame = document.getElementById("btnStartGame");
+
+if(btnStartGame) {
+  btnStartGame.addEventListener("click", async () => {
+    //Permisos de movimiento
+    await motionRequestPermission();
+    startView.classList.add("hidden");
+    setGameState("PLAYING");
+  });
+}
 
 function showGame() {
   settingsView.classList.add("hidden");
