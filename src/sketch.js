@@ -3,6 +3,7 @@ import { motionRequestPermission, motionStartOrientation } from "./motion";
 import { KeepAwake } from "@capacitor-community/keep-awake";
 import { Particle } from "./particle";
 import { fetchNewJoke } from "./jokes";
+import { hapticsImpactLight, hapticsImpactHeavy } from "./haptics";
 
 //-- VARIABLE GLOBAL DE ESTADO DEL JUEGO --
 //Fuera de p5 para exportar una función para cambiarlas desde main.js
@@ -237,6 +238,7 @@ export const sketch = new p5((p) => {
           sessionCoins++;
           particles.splice(i, 1); // eliminar partícula
           updateRobotWithJoke(); // Pedir nuevo chiste
+          hapticsImpactLight(); // Vibración ligera
           //TODO: sonido moneda
           continue;
         }
@@ -323,6 +325,7 @@ export const sketch = new p5((p) => {
 
   function handleGameOver() {
     gameState = "GAMEOVER";
+    hapticsImpactHeavy(); // Vibración fuerte
 
     //calcular y guardar lingotes
     const lingotesEarned = Math.floor(sessionCoins / 30);
