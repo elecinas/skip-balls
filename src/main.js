@@ -1,5 +1,5 @@
 import "./style.css";
-import { sketch, setGameState } from "./sketch.js";
+import { sketch, setGameState, setMusicEnabled, setSfxEnabled } from "./sketch.js";
 import { GameStorage } from "./storage.js";
 import { motionRequestPermission } from "./motion.js";
 
@@ -12,11 +12,20 @@ const usernameInput = document.getElementById("usernameInput");
 const lingotesDisplay = document.getElementById("lingotesDisplay");
 const characterList = document.getElementById("characterList");
 const rankingList = document.getElementById("rankingList");
+
+//Configuración de chistes
 const checkJokes = document.getElementById("checkJokes");
 const selectJokeType = document.getElementById("selectJokeType");
+
+//Configuración de audio
+const checkMusic = document.getElementById("checkMusic");
+const checkSfx = document.getElementById("checkSfx");
+
+// Pantalla de inicio
 const startView = document.getElementById("startView");
 const btnStartGame = document.getElementById("btnStartGame");
 
+// --- INICIO DEL JUEGO ---
 if(btnStartGame) {
   btnStartGame.addEventListener("click", async () => {
     //Permisos de movimiento
@@ -43,6 +52,10 @@ async function showSettings() {
   checkJokes.checked = data.jokesEnabled;
   selectJokeType.value = data.jokeCategory;
   selectJokeType.disabled = !data.jokesEnabled; // Habilitar/Deshabilitar selector según checkbox
+
+  // Carga estado de audio
+  checkMusic.checked = data.musicEnabled;
+  checkSfx.checked = data.sfxEnabled;
 
   // Personajes
   characterList.innerHTML = ""; // Limpiar lista
@@ -144,6 +157,20 @@ checkJokes.addEventListener("change", (e) => {
 selectJokeType.addEventListener("change", (e) => {
   GameStorage.updateJokeSettings(checkJokes.checked, e.target.value);
 })
+
+// Cambiar configuración de música
+checkMusic.addEventListener("change", (e) => {
+  const isEnabled = e.target.checked;
+  setMusicEnabled(isEnabled); // Actualizar en el juego
+  GameStorage.updateMusicSettings(isEnabled); // Guardar
+});
+
+// Cambiar configuración de efectos de sonido
+checkSfx.addEventListener("change", (e) => {
+  const isEnabled = e.target.checked;
+  setSfxEnabled(isEnabled); // Actualizar en el juego
+  GameStorage.updateSfxSettings(isEnabled); // Guardar
+});
 
 // Iniciamos por defecto: juego
 showGame();

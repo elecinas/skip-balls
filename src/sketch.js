@@ -6,13 +6,15 @@ import { fetchNewJoke } from "./jokes";
 import { hapticsImpactLight, hapticsImpactHeavy } from "./haptics";
 
 //-- VARIABLE GLOBAL DE ESTADO DEL JUEGO --
-//Fuera de p5 para exportar una función para cambiarlas desde main.js
+//Fuera de p5 para exportar una función para cambiarlas desde fuera
 let gameState = "START"; // START, PLAYING, GAMEOVER
+let isMusicOn = true;
+let isSfxOn = true;
 
-// Función para cambiar estado del juego desde main.js
-export function setGameState(newState) {
-  gameState = newState;
-}
+// Funciones para controlar el juego desde fuera
+export function setGameState(newState) { gameState = newState;}
+export function setMusicEnabled(enabled) { isMusicOn = enabled; }
+export function setSfxEnabled(enabled) { isSfxOn = enabled;}
 
 export const sketch = new p5((p) => {
   let sessionCoins = 0; // Monedas ganadas en la sesión actual
@@ -85,6 +87,10 @@ export const sketch = new p5((p) => {
     const data = await GameStorage.getData();
     currentUsername = data.username || "Jugador";
 
+    // Cargar preferencias de audio
+    isMusicOn = data.musicEnabled;
+    isSfxOn = data.sfxEnabled;
+
     // Si los chistes están deshabilitados
     if (!data.jokesEnabled) {
       robotPrase = "disabled";
@@ -112,6 +118,17 @@ export const sketch = new p5((p) => {
   };
 
   p.draw = () => {
+    // --- CONTROL DE AUDIO ---
+    // Si la música suena pero el interruptor está en OFF, pararla
+    if(sndMusic && sndMusic.isPlaying() && !isMusicOn){
+      sndMusic.stop();
+    }
+    // Si la música no suena y el interruptor está en ON, reproducirla
+    if(sndMusic && !sndMusic.isPlaying() && isMusicOn && gameState === "PLAYING"){
+      sndMusic.setVolume(0.5);
+      sndMusic.loop();
+    }
+
     // --- DIBUJAR FONDO ---
     p.background(COLORS.bg);
 
@@ -145,11 +162,25 @@ export const sketch = new p5((p) => {
     // Revisamos cada 30 frames (aprox 0.5 seg)
     // skin y chistes
     if (p.frameCount % 30 === 0) {
+      if(sndMusic){
+        if(!isMusicOn && sndMusic.isPlaying()){
+          sndMusic.pause();
+        }
+        if(isMusicOn && !sndMusic.isPlaying() && gameState === "PLAYING"){
+          sndMusic.setVolume(0.5);
+          sndMusic.loop();
+        }
+      }
       // Actualizar skin actual
       GameStorage.getData().then((data) => {
+        //Skin
         if (charImages[data.selectedCharacter])
           currentSkin = data.selectedCharacter;
+        //Chistes
         if (!data.jokesEnabled) robotPrase = "disabled";
+        // Preferencias audio
+        isMusicOn = data.musicEnabled;
+        isSfxOn = data.sfxEnabled;
       });
     }
 
@@ -184,7 +215,7 @@ export const sketch = new p5((p) => {
     sessionCoins = 0; //resetear monedas de la sesión
 
     // Si la música no está sonando, reproducirla
-    if(sndMusic && !sndMusic.isPlaying()){
+    if(isMusicOn && sndMusic && !sndMusic.isPlaying()){
       sndMusic.setVolume(0.5);
       sndMusic.loop();
     }
@@ -256,7 +287,7 @@ export const sketch = new p5((p) => {
           hapticsImpactLight(); // Vibración ligera
           
           // Sonido de moneda
-          if(sndCoin) sndCoin.play();
+          if(isSfxOn && sndCoin) sndCoin.play();
 
           continue;
         }
@@ -345,13 +376,13 @@ export const sketch = new p5((p) => {
     hapticsImpactHeavy(); // Vibración fuerte
 
     // Sonido de explosión
-    if(sndBoom) sndBoom.play();
+    if(isSfxOn && sndBoom) sndBoom.play();
 
     // Parar música
     if(sndMusic && sndMusic.isPlaying()){
       sndMusic.stop();
     }
-    
+
     // Cambiar estado a GAME OVER
     gameState = "GAMEOVER";
 

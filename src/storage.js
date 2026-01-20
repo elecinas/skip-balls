@@ -15,7 +15,9 @@ const defaultData = {
   unlockedCharacters: [0], 
   selectedCharacter: 0,
   jokesEnabled: true, // Habilitar/deshabilitar chistes
-  jokeCategory: "Any" // "Any", "Programming", "Misc", "Dark", "Pun", "Spooky", "Christmas"
+  jokeCategory: "Any", // "Any", "Programming", "Misc", "Dark", "Pun", "Spooky", "Christmas"
+  musicEnabled: true, // Habilitar/deshabilitar música
+  sfxEnabled: true // Habilitar/deshabilitar efectos de sonido
 };
 
 const KEY = 'skip_balls_v2'; // Clave en localStorage
@@ -25,8 +27,13 @@ export const GameStorage = {
   // Obtener datos del jugador
   async getData() {
     const { value } = await Preferences.get({ key: KEY });
+    // Si no hay datos guardados, devolver los datos por defecto
     if (!value) return { ...defaultData };
-    return JSON.parse(value);
+    // Si hay datos:
+    const saveData = JSON.parse(value);
+    //Mezclar los datos por defecto con los guardados
+    // Esto asegura que si se añaden nuevos campos en el futuro, se incluyan
+    return { ...defaultData, ...saveData };
   },
 
   // Guardar datos del jugador
@@ -78,6 +85,20 @@ export const GameStorage = {
     const data = await this.getData();
     data.jokesEnabled = enabled;
     data.jokeCategory = category;
+    await this.saveData(data);
+  },
+  
+  //Guardar configuración de música
+  async updateMusicSettings(isEnabled){
+    const data = await this.getData();
+    data.musicEnabled = isEnabled;
+    await this.saveData(data);
+  },
+
+  // Guardar configuración de efectos de sonido
+  async updateSfxSettings(isEnabled){
+    const data = await this.getData();
+    data.sfxEnabled = isEnabled;
     await this.saveData(data);
   }
 };
