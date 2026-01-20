@@ -39,6 +39,7 @@ export const sketch = new p5((p) => {
 
   // --- IMÁGENES ---
   let charImages = {}; // Objeto para imágenes cargadas: { 0: img1, 1: img2 }
+  let sndCoin, sndBoom, sndMusic;
   let currentSkin = null; // La imagen actual
 
   // --- COLORES DE DISEÑO (Cyberpunk CMY Palette) ---
@@ -58,6 +59,12 @@ export const sketch = new p5((p) => {
       charImages[char.id] = p.loadImage(char.img);
       console.log("Pre-cargando imagen:", char.id, char.img);
     });
+
+    // -- CARGAR SONIDOS --
+    p.soundFormats("mp3", "wav");
+    sndCoin = p.loadSound("/sounds/coin.mp3");
+    sndBoom = p.loadSound("/sounds/boom.mp3");
+    sndMusic = p.loadSound("/sounds/music.mp3");
   };
 
   p.setup = async () => {
@@ -131,7 +138,7 @@ export const sketch = new p5((p) => {
     // Capa de partículas
     spawnParticles();
     updateAndDrawParticles();
-    
+
     // Suelo
     drawFloor();
 
@@ -162,32 +169,40 @@ export const sketch = new p5((p) => {
   };
 
   p.mousePressed = async () => {
-    if(gameState === "GAMEOVER") {
+    // Desbloquear audio en móviles
+    p.userStartAudio();
+    if (gameState === "GAMEOVER") {
       resetGame();
     }
   };
 
   async function resetGame() {
     particles = [];
-      player.x = p.width / 2;
-      vx = 0;
-      spawnEvery = 50;
-      sessionCoins = 0; //resetear monedas de la sesión
+    player.x = p.width / 2;
+    vx = 0;
+    spawnEvery = 50;
+    sessionCoins = 0; //resetear monedas de la sesión
 
-      //volver a jugar
-      gameState = "PLAYING";
+    // Si la música no está sonando, reproducirla
+    if(sndMusic && !sndMusic.isPlaying()){
+      sndMusic.setVolume(0.5);
+      sndMusic.loop();
+    }
 
-      // Actualizar nombre de usuario actual
-      const data = await GameStorage.getData();
-      if (data.jokesEnabled) {
-        robotPrase = "Collect coins to read a joke";
-      } else {
-        robotPrase = "disabled";
-      }
-      currentUsername = data.username;
+    //volver a jugar
+    gameState = "PLAYING";
 
-      // ACTUALIZAR PERSONAJE
-      currentSkin = charImages[data.selectedCharacter];
+    // Actualizar nombre de usuario actual
+    const data = await GameStorage.getData();
+    if (data.jokesEnabled) {
+      robotPrase = "Collect coins to read a joke";
+    } else {
+      robotPrase = "disabled";
+    }
+    currentUsername = data.username;
+
+    // ACTUALIZAR PERSONAJE
+    currentSkin = charImages[data.selectedCharacter];
   }
 
   function spawnParticles() {
@@ -239,7 +254,10 @@ export const sketch = new p5((p) => {
           particles.splice(i, 1); // eliminar partícula
           updateRobotWithJoke(); // Pedir nuevo chiste
           hapticsImpactLight(); // Vibración ligera
-          //TODO: sonido moneda
+          
+          // Sonido de moneda
+          if(sndCoin) sndCoin.play();
+
           continue;
         }
         //CASO 2: partícula dañina
@@ -324,8 +342,18 @@ export const sketch = new p5((p) => {
   }
 
   function handleGameOver() {
-    gameState = "GAMEOVER";
     hapticsImpactHeavy(); // Vibración fuerte
+
+    // Sonido de explosión
+    if(sndBoom) sndBoom.play();
+
+    // Parar música
+    if(sndMusic && sndMusic.isPlaying()){
+      sndMusic.stop();
+    }
+    
+    // Cambiar estado a GAME OVER
+    gameState = "GAMEOVER";
 
     //calcular y guardar lingotes
     const lingotesEarned = Math.floor(sessionCoins / 30);
