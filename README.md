@@ -25,6 +25,10 @@ La estética tiene un estilo **Cyberpunk/Neon**, presentando un fondo oscuro, lu
     * **Categorías configurables:** Elige en ajustes, si quieres leer chistes. Y si, sí quieres, puedes elegir entre chistes de Programación, Terror, Navidad, Juegos de palabras, etc.
     * **Modo Offline:** Incluye un sistema de respaldo local para que el robot nunca se quede callado, incluso sin internet.
 * **🏆 Sistema de Ranking:** Guarda localmente las 10 mejores puntuaciones.
+* **🔫 Sistema de Combate:** Toca cualquier parte de la pantalla para disparar y destruir enemigos. Empiezas con 10 balas y debes administrar tu munición.
+* **📦 Power-ups:** Aparecen cajas de suministros (iconos verdes) que recargan tu arma (+5 balas) y reproducen un sonido de recarga.
+* **📳 Feedback Háptico:** El móvil vibra al recibir daño, recoger items o disparar (gracias a Capacitor Haptics).
+* **🔊 Audio Reactivo:** Efectos de sonido para disparos, explosiones y monedas, además de música de fondo. Incluye controles para silenciar Música o FX independientemente.
 * **📱 Diseño Responsivo:** Interfaz adaptada a cualquier pantalla móvil, únicamente jugable en vertical.
 
 ## 🛠 Tecnologías Utilizadas
@@ -36,7 +40,10 @@ Este proyecto utiliza un stack moderno para el desarrollo híbrido:
 * **[Capacitor](https://capacitorjs.com/):** Para empaquetar la aplicación web como una app nativa (Android) y acceder a sensores del dispositivo.
 * * **[JokeAPI](https://jokeapi.dev/):** API REST para obtener contenido dinámico (chistes) mediante `fetch` asíncrono.
 * **HTML5 / CSS3:** Diseño de la UI (menús, tienda) con Flexbox y Grid.
-* **Capacitor Preferences:** Persistencia de datos (monedas, personajes desbloqueados y récords).
+* **[Capacitor Preferences](https://capacitorjs.com/docs/apis/preferences):** Persistencia de datos (monedas, personajes desbloqueados y récords).
+* **[p5.sound](https://p5js.org/reference/#/libraries/p5.sound):** Extensión de p5.js para la gestión de audio, efectos y música.
+* **[@capacitor/haptics](https://capacitorjs.com/docs/apis/haptics):** Plugin para controlar el motor de vibración del dispositivo.
+* **[@capacitor/assets](https://capacitorjs.com/docs/guides/splash-screens-and-icons):** Herramienta para la generación automática de iconos y pantallas de carga (Splash Screens) para Android e iOS.
 
 ## 🚀 Instalación y Desarrollo Local
 
@@ -90,15 +97,17 @@ Para generar la aplicación nativa usando Capacitor:
 2.  Aceptar los permisos de movimiento (si se solicitan).
 3.  **Inclinar el móvil** a izquierda o derecha para mover al robot.
 4.  Esquivar las bolas rojas (💥).
-5.  Recoger las bolas doradas (💰).
-6.  Si mueres, tus monedas se convertirán en lingotes (cada 30 monedas un lingote), luego se pierden.
-7.  **Leer el chiste:** En la pantalla de *Game Over*, aparecerá un chiste temático como recompensa (si está activado).
-8.  Tocar el botón **⚙️ (Engranaje)** para ir a la tienda, gastar los lingotes o **configurar la categoría de los chistes**.
+5.  Tocar el botón de la pistola para disparar a las bolas rojas y destruirlas.
+6.  Recoger las bolas doradas (💰).
+7.  Si mueres, tus monedas se convertirán en lingotes (cada 30 monedas un lingote), luego se pierden.
+8.  **Leer el chiste:** En la pantalla de *Game Over*, aparecerá un chiste temático como recompensa (si está activado).
+9.  Tocar el botón **⚙️ (Engranaje)** para ir a la tienda, gastar los lingotes o **configurar la categoría de los chistes**.
 
 ## 📢 Créditos y Atribuciones
 
 * **Ilustraciones de Robots:** [Freepik](https://www.freepik.com)
 * * **API de Chistes:** [JokeAPI (Sv443)](https://jokeapi.dev/)
+* * **Efectos de Sonido y Música:** Royalty-free music & SFX de [Pixabay](https://pixabay.com/sound-effects/)
 * **Código y Desarrollo:** Esther Lecina
 * **Herramientas de Apoyo:**
     * Este proyecto ha utilizado **IA** como asistente de programación para:
