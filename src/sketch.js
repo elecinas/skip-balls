@@ -2,6 +2,7 @@ import { GameStorage, CHARACTERS_DATA } from "./storage";
 import { motionRequestPermission, motionStartOrientation } from "./motion";
 import { KeepAwake } from "@capacitor-community/keep-awake";
 import { Particle } from "./particle";
+import { Projectile } from "./projectile";
 import { fetchNewJoke } from "./jokes";
 import { hapticsImpactLight, hapticsImpactHeavy } from "./haptics";
 import { App } from "@capacitor/app";
@@ -52,6 +53,9 @@ export const sketch = new p5((p) => {
   let player = { x: 0, y: 0, size: 70 };
   let vx = 0;
   let floorHeight = 150;
+  let bullets = [];// array de proyectiles
+  let ammo = 10; // munición inicial
+  let fireBtn = { x: 0, y: 0, r: 35 }; // botón de disparo
 
   // Partículas del cielo
   let particles = [];
@@ -79,7 +83,7 @@ export const sketch = new p5((p) => {
   };
 
   // --- SONIDOS ---
-  let sndCoin, sndBoom, sndMusic;
+  let sndCoin, sndBoom, sndMusic, sndLaser, sndReload;
 
   // Skin actual
   let currentSkin = null; // La imagen actual
@@ -112,6 +116,8 @@ export const sketch = new p5((p) => {
     sndCoin = p.loadSound("/sounds/coin.mp3");
     sndBoom = p.loadSound("/sounds/boom.mp3");
     sndMusic = p.loadSound("/sounds/music.mp3");
+    sndLaser = p.loadSound("/sounds/laser.mp3");
+    sndReload = p.loadSound("/sounds/reload.mp3");
   };
 
   p.setup = async () => {
@@ -239,6 +245,9 @@ export const sketch = new p5((p) => {
     // Suelo
     drawFloor();
 
+    // Botón de disparo
+    drawFireButton();
+
     // Revisamos cada 30 frames (aprox 0.5 seg)
     // skin y chistes
     if (p.frameCount % 30 === 0) {
@@ -282,13 +291,35 @@ export const sketch = new p5((p) => {
   p.mousePressed = async () => {
     // Desbloquear audio en móviles
     p.userStartAudio();
-    if (gameState === "GAMEOVER") {
+    
+    if (gameState === "PLAYING") {
+      //Calculardistancia del toque al botón
+      let d = p.dist(p.mouseX, p.mouseY, fireBtn.x, fireBtn.y);
+      
+      //Si tocamos DENTRO del botón Y tenemos balas
+      if (d < fireBtn.r && ammo > 0) {
+          bullets.push(new Projectile(p, player.x, player.y - 40));
+          ammo--; 
+          
+          // Vibración
+          hapticsImpactLight();
+          
+          // Sonido
+          if(isSfxOn && sndLaser) {
+            sndLaser.setVolume(0.7);// volumen un poco más bajo
+            sndLaser.play();
+          }
+      }
+      
+    } else if (gameState === "GAMEOVER") {
       resetGame();
     }
   };
 
   async function resetGame() {
     particles = [];
+    bullets = [];
+    ammo = 10;
     player.x = p.width / 2;
     vx = 0;
     spawnEvery = 50;
@@ -332,7 +363,16 @@ export const sketch = new p5((p) => {
     const vel = p.random(0.07, 0.2);
 
     // Por probabilidad, decidir si es partícula dañina o moneda
-    const type = p.random() < 0.2 ? "coin" : "damage"; // 20% monedas, 80% daño
+    let type = "damage"; // por defecto
+    const r = p.random();
+
+    //75% de damage, 25% moneda, 5% arma especial
+    if(r < 0.05) {
+      type = "weapon";// arma especial (rara)
+    } else if (r < 0.25) {
+      type = "coin";  // 25% de probabilidad de ser moneda
+    }
+
 
     particles.push(new Particle(p, x, y, radius, vel, type));
 
@@ -369,9 +409,19 @@ export const sketch = new p5((p) => {
           if (isSfxOn && sndCoin) sndCoin.play();
 
           continue;
+        } 
+        //CASO 2: arma especial
+        else if (particle.type === "weapon") {
+          ammo += 5; // sumar 5 balas
+          particles.splice(i, 1); // eliminar partícula
+          hapticsImpactLight(); // Vibración ligera
+
+          //TODO: sonido de recarga
+          if (isSfxOn && sndReload) sndReload .play();
+          continue;
         }
-        //CASO 2: partícula dañina
-        if (particle.type === "damage") {
+        //CASO 3: partícula dañina
+        else if (particle.type === "damage") {
           updateRobotWithJoke(); // Pedir nuevo chiste
           handleGameOver();
         }
@@ -381,6 +431,75 @@ export const sketch = new p5((p) => {
       if (particle.isOffScreen(p.height - floorHeight)) {
         particles.splice(i, 1);
       }
+    }
+
+    // --- GESTIÓN DE BALAS ---
+    for (let i = bullets.length -1; i >=0; i--) {
+        const bullet = bullets[i];
+        bullet.update();
+        bullet.draw();
+
+        // Comprobar colisión con partículas
+        for (let j = particles.length -1; j >=0; j--) {
+            const particle = particles[j];
+            if (particle.type === "damage") {
+              let d = p.dist(bullet.x, bullet.y, particle.pos.x, particle.pos.y);
+              if (d < particle.radius + 5) { // 5 es la mitad del ancho del láser
+                  // Colisión: eliminar ambos
+                  particles.splice(j, 1);
+                  bullets.toDelete = true;
+                  //Efecto visual
+                  p.fill(255);
+                  p.noStroke();
+                  p.circle(particle.pos.x, particle.pos.y, 30);
+                  break;
+              }
+            }
+        }
+
+        // Eliminar balas marcadas para borrar
+        if (bullet.toDelete) {
+            bullets.splice(i, 1);
+        }
+    }
+  }
+
+  function drawFireButton() {
+    //Calcular posición (dentro del suelo)
+    fireBtn.x = p.width / 2;
+    fireBtn.y = p.height - floorHeight / 2;
+
+    p.noStroke();
+
+    //Color según munición
+    if (ammo > 0) {
+      //Botón activo (rojo neón)
+      p.drawingContext.shadowBlur = 15;
+      p.drawingContext.shadowColor = COLORS.danger;
+      p.fill(COLORS.danger);
+    } else {
+      //Botón inactivo (gris oscuro)
+      p.drawingContext.shadowBlur = 0;
+      p.fill(50);
+    }
+
+    // Dibujar círculo
+    p.circle(fireBtn.x, fireBtn.y, fireBtn.r * 2);
+
+    //Icono o Texto dentro
+    p.drawingContext.shadowBlur = 0;
+    p.fill(255);
+    p.textAlign(p.CENTER, p.CENTER);
+    p.textSize(24);
+
+    if (ammo > 0) {
+      p.text("🔫", fireBtn.x, fireBtn.y + 2);
+      //Pequeño número de balas
+      p.textSize(9);
+      p.fill(255);
+      p.text(ammo, fireBtn.x + 20, fireBtn.y -20);
+    } else {
+      p.text("Vacío", fireBtn.x, fireBtn.y);
     }
   }
 
