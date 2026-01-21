@@ -2,9 +2,15 @@
 
 > Un juego arcade de habilidad basado en sensor de orientación, desarrollado con tecnologías web modernas y portado a móvil nativo.
 
-![Captura juego](assets/screenshot_1.jpg)
-![Captura final de juego](assets/screenshot_2.jpg)
-![Captura pantalla settings](assets/screenshot_3.jpg)
+<p align="center">
+    <img src="assets/screenshot_0.jpg" alt="Captura inicio" width="30%">
+  <img src="assets/screenshot_1.jpg" alt="Captura juego" width="30%">
+  &nbsp; &nbsp;
+  <img src="assets/screenshot_2.jpg" alt="Captura final" width="30%">
+  &nbsp; &nbsp;
+  <img src="assets/screenshot_3.jpg" alt="Captura settings arriba" width="30%">
+  <img src="assets/screenshot_4.jpg" alt="Captura settings abajo" width="30%">
+</p>
 
 ## 🎮 Sobre el juego
 
