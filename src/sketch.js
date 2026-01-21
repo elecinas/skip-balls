@@ -283,7 +283,6 @@ export const sketch = new p5((p) => {
           // Es una moneda: sumar monedas
           sessionCoins++;
           particles.splice(i, 1); // eliminar partícula
-          updateRobotWithJoke(); // Pedir nuevo chiste
           hapticsImpactLight(); // Vibración ligera
           
           // Sonido de moneda
@@ -293,6 +292,7 @@ export const sketch = new p5((p) => {
         }
         //CASO 2: partícula dañina
         if (particle.type === "damage") {
+          updateRobotWithJoke(); // Pedir nuevo chiste
           handleGameOver();
         }
       }
