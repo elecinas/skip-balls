@@ -41,7 +41,26 @@ export const sketch = new p5((p) => {
 
   // --- IMÁGENES ---
   let charImages = {}; // Objeto para imágenes cargadas: { 0: img1, 1: img2 }
+
+  // --- CONFIGURACIÓN DE ROBOTS NPCs ---
+  let npcImages = {}; // Imágenes de NPCs
+  let currentNpcSkin = null; // NPC actual
+
+  //Diccionario: Nombre de categoria -> nombre de archivo
+  const NPC_CONFIG = {
+    "Programming": "programming.png",
+    "Spooky": "spooky.png",
+    "Christmas": "christmas.png",
+    "Pun": "pun.png",
+    "Dark": "dark.png",
+    "Misc": "misc.png",
+    "Any": "any.png",
+  };
+
+  // --- SONIDOS ---
   let sndCoin, sndBoom, sndMusic;
+
+  // Skin actual
   let currentSkin = null; // La imagen actual
 
   // --- COLORES DE DISEÑO (Cyberpunk CMY Palette) ---
@@ -61,6 +80,11 @@ export const sketch = new p5((p) => {
       charImages[char.id] = p.loadImage(char.img);
       console.log("Pre-cargando imagen:", char.id, char.img);
     });
+
+    // -- CARGAR IMÁGENES NPCs --
+    for (const [category, fileName] of Object.entries(NPC_CONFIG)) {
+      npcImages[category] = p.loadImage(`/robots/npcs/${fileName}`);
+    }
 
     // -- CARGAR SONIDOS --
     p.soundFormats("mp3", "wav");
@@ -393,6 +417,17 @@ export const sketch = new p5((p) => {
       // Ranking
       GameStorage.saveRankingEntry(currentUsername, lingotesEarned);
     }
+
+    // Elegir robot NPC según categoría de chiste
+    GameStorage.getData().then(data => {
+      const cat = data.jokeCategory || "Any";
+      if(npcImages[cat]) {
+        currentNpcSkin = npcImages[cat];
+      } else {
+        currentNpcSkin = npcImages["Any"];
+      }
+    })
+
     //Pedir chiste
     updateRobotWithJoke();
   }
@@ -439,27 +474,54 @@ export const sketch = new p5((p) => {
       p.text("> TOCA PARA REINICIAR <", p.width / 2, p.height / 2 + 50);
     }
 
-    //-- PINTA EL CHISTE AL FINAL --
+    //-- PINTA EL CHISTE Y EL NPC --
     if (robotPrase !== "disabled") {
       //coordenadas para todo
       let boxX = p.width / 2;
-      let boxY = p.height / 2 + 170;
+      let boxY = p.height / 2 + 160;
       let boxW = p.width - 60;
-      let boxH = 110;
+      let boxH = 180;
 
       // Fondo del recuadro
       p.rectMode(p.CENTER);
       p.noStroke();
-      p.fill(30, 35, 40, 200); // Fondo semitransparente
+      p.fill(100, 105, 110, 230); // Fondo semitransparente
       p.rect(boxX, boxY, boxW, boxH, 15);
 
+      // Dibuja el NPC
+      if(currentNpcSkin){
+        let npcSize = 100;
+
+        //Linea inferior izquierda del cudro
+        let boxLeft = boxX - boxW / 2;
+        let boxBottom = boxY + boxH / 2;
+
+        //Posición del NPC
+        let npcX = p.width - 100;
+        let npcY = boxBottom + 20;
+
+        //dibujar imagen
+        p.tint(230,255); // ligero tintado para integrarlo
+        p.image(currentNpcSkin, npcX, npcY, npcSize, npcSize);
+        p.noTint();
+      }
+      
       // Texto del chiste
+      p.rectMode(p.CENTER);
       p.fill(COLORS.text);
       p.textSize(16);
       p.textStyle(p.ITALIC);
       p.textAlign(p.CENTER, p.CENTER);
-      p.text(robotPrase, boxX, boxY, boxW - 20, boxH - 10);
 
+      //Calcula la esquina superior izquierda del texto
+      // Que és la mitad del recuadro 
+      // menos la mitad del ancho/alto del recuadro
+      let textX = boxX;
+      let textY = boxY;
+
+      //margen interno de 20px
+      p.text(robotPrase, textX, textY, boxW - 40, boxH - 40);
+      
       p.rectMode(p.CORNER);
     }
   }
