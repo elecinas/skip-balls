@@ -1,5 +1,5 @@
 import "./style.css";
-import { sketch, setGameState, setMusicEnabled, setSfxEnabled } from "./sketch.js";
+import { sketch, setGameState, setMusicEnabled, setSfxEnabled, setSettingsOpen } from "./sketch.js";
 import { GameStorage } from "./storage.js";
 import { motionRequestPermission } from "./motion.js";
 
@@ -36,11 +36,16 @@ if(btnStartGame) {
 }
 
 function showGame() {
+  // Avisar al juego que volvemos al juego
+  setSettingsOpen(false);
   settingsView.classList.add("hidden");
   gameView.classList.remove("hidden");
 }
 
 async function showSettings() {
+  // Avisar al juego que estamos en Settings
+  setSettingsOpen(true);
+
   //Al abrir los ajustes, cargar datos del jugador
   const data = await GameStorage.getData();
 

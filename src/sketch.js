@@ -4,17 +4,38 @@ import { KeepAwake } from "@capacitor-community/keep-awake";
 import { Particle } from "./particle";
 import { fetchNewJoke } from "./jokes";
 import { hapticsImpactLight, hapticsImpactHeavy } from "./haptics";
+import { App } from "@capacitor/app";
 
 //-- VARIABLE GLOBAL DE ESTADO DEL JUEGO --
 //Fuera de p5 para exportar una función para cambiarlas desde fuera
 let gameState = "START"; // START, PLAYING, GAMEOVER
 let isMusicOn = true;
 let isSfxOn = true;
+let isSettingOpen = false;
 
 // Funciones para controlar el juego desde fuera
-export function setGameState(newState) { gameState = newState;}
-export function setMusicEnabled(enabled) { isMusicOn = enabled; }
-export function setSfxEnabled(enabled) { isSfxOn = enabled;}
+export function setGameState(newState) {
+  gameState = newState;
+}
+export function setMusicEnabled(enabled) {
+  isMusicOn = enabled;
+}
+export function setSfxEnabled(enabled) {
+  isSfxOn = enabled;
+}
+export function setSettingsOpen(isOpen) {
+  isSettingOpen = isOpen;
+  if(isOpen) {
+    // Pausar juego si se abren ajustes
+    sketch.noLoop(); // Detener draw loop
+    if(sketch.sndMusic && sketch.sndMusic.isPlaying()) sketch.sndMusic.pause();
+  } else {
+    //Reaudar juego al cerrar ajustes
+    sketch.loop(); // Reanuda el draw loop
+    // Solo reanudar música si está activada
+    if(isMusicOn && gameState === "PLAYING" && sketch.sndMusic) sketch.sndMusic.loop();
+  }
+}
 
 export const sketch = new p5((p) => {
   let sessionCoins = 0; // Monedas ganadas en la sesión actual
@@ -48,13 +69,13 @@ export const sketch = new p5((p) => {
 
   //Diccionario: Nombre de categoria -> nombre de archivo
   const NPC_CONFIG = {
-    "Programming": "programming.png",
-    "Spooky": "spooky.png",
-    "Christmas": "christmas.png",
-    "Pun": "pun.png",
-    "Dark": "dark.png",
-    "Misc": "misc.png",
-    "Any": "any.png",
+    Programming: "programming.png",
+    Spooky: "spooky.png",
+    Christmas: "christmas.png",
+    Pun: "pun.png",
+    Dark: "dark.png",
+    Misc: "misc.png",
+    Any: "any.png",
   };
 
   // --- SONIDOS ---
@@ -131,10 +152,40 @@ export const sketch = new p5((p) => {
       degrees = o;
     });
 
-    // Para limpiar listeners al salir (si es necesario)
-    // window.onbeforeunload = async () => {
-    //   await unsubscribe();
-    // };
+    // DETECTOR DE SALIDA DE LA APP
+    App.addListener("appStateChange", async ({ isActive }) => {
+      if (!isActive) {
+        // La app está en segundo plano
+        p.noLoop(); // Detener draw loop
+        //Suspender el contexto del audio
+        if (p.getAudioContext().state === "running") {
+          p.getAudioContext().suspend();
+        }
+        // Pausar música si corresponde
+        if (sndMusic && sndMusic.isPlaying()) sndMusic.pause();
+      } else {
+        // Volver a encender el motor de audio
+        if (p.getAudioContext().state !== "running") {
+          await p.getAudioContext().resume();
+        }
+        // Solo reanudamos si NO estamos en la pantalla de Settings
+        if (!isSettingOpen) {
+           p.loop(); // VUELVE A ARRANCAR EL DRAW
+
+           // Reanudar música si corresponde
+           if (isMusicOn && sndMusic && gameState === "PLAYING") {
+             sndMusic.loop();
+           }
+        } else {
+           // Si estamos en Settings, mantenemos pausado
+           p.noLoop();
+           //Reactivamos la música también en ajustes
+           if(isMusicOn && sndMusic && !sndMusic.isPlaying()) {
+             sndMusic.loop();
+           }
+        }
+      }
+    });
   };
 
   p.windowResized = () => {
@@ -144,11 +195,16 @@ export const sketch = new p5((p) => {
   p.draw = () => {
     // --- CONTROL DE AUDIO ---
     // Si la música suena pero el interruptor está en OFF, pararla
-    if(sndMusic && sndMusic.isPlaying() && !isMusicOn){
+    if (sndMusic && sndMusic.isPlaying() && !isMusicOn) {
       sndMusic.stop();
     }
     // Si la música no suena y el interruptor está en ON, reproducirla
-    if(sndMusic && !sndMusic.isPlaying() && isMusicOn && gameState === "PLAYING"){
+    if (
+      sndMusic &&
+      !sndMusic.isPlaying() &&
+      isMusicOn &&
+      gameState === "PLAYING"
+    ) {
       sndMusic.setVolume(0.5);
       sndMusic.loop();
     }
@@ -186,11 +242,11 @@ export const sketch = new p5((p) => {
     // Revisamos cada 30 frames (aprox 0.5 seg)
     // skin y chistes
     if (p.frameCount % 30 === 0) {
-      if(sndMusic){
-        if(!isMusicOn && sndMusic.isPlaying()){
+      if (sndMusic) {
+        if (!isMusicOn && sndMusic.isPlaying()) {
           sndMusic.pause();
         }
-        if(isMusicOn && !sndMusic.isPlaying() && gameState === "PLAYING"){
+        if (isMusicOn && !sndMusic.isPlaying() && gameState === "PLAYING") {
           sndMusic.setVolume(0.5);
           sndMusic.loop();
         }
@@ -239,7 +295,7 @@ export const sketch = new p5((p) => {
     sessionCoins = 0; //resetear monedas de la sesión
 
     // Si la música no está sonando, reproducirla
-    if(isMusicOn && sndMusic && !sndMusic.isPlaying()){
+    if (isMusicOn && sndMusic && !sndMusic.isPlaying()) {
       sndMusic.setVolume(0.5);
       sndMusic.loop();
     }
@@ -308,9 +364,9 @@ export const sketch = new p5((p) => {
           sessionCoins++;
           particles.splice(i, 1); // eliminar partícula
           hapticsImpactLight(); // Vibración ligera
-          
+
           // Sonido de moneda
-          if(isSfxOn && sndCoin) sndCoin.play();
+          if (isSfxOn && sndCoin) sndCoin.play();
 
           continue;
         }
@@ -400,10 +456,10 @@ export const sketch = new p5((p) => {
     hapticsImpactHeavy(); // Vibración fuerte
 
     // Sonido de explosión
-    if(isSfxOn && sndBoom) sndBoom.play();
+    if (isSfxOn && sndBoom) sndBoom.play();
 
     // Parar música
-    if(sndMusic && sndMusic.isPlaying()){
+    if (sndMusic && sndMusic.isPlaying()) {
       sndMusic.stop();
     }
 
@@ -419,14 +475,14 @@ export const sketch = new p5((p) => {
     }
 
     // Elegir robot NPC según categoría de chiste
-    GameStorage.getData().then(data => {
+    GameStorage.getData().then((data) => {
       const cat = data.jokeCategory || "Any";
-      if(npcImages[cat]) {
+      if (npcImages[cat]) {
         currentNpcSkin = npcImages[cat];
       } else {
         currentNpcSkin = npcImages["Any"];
       }
-    })
+    });
 
     //Pedir chiste
     updateRobotWithJoke();
@@ -489,7 +545,7 @@ export const sketch = new p5((p) => {
       p.rect(boxX, boxY, boxW, boxH, 15);
 
       // Dibuja el NPC
-      if(currentNpcSkin){
+      if (currentNpcSkin) {
         let npcSize = 100;
 
         //Linea inferior izquierda del cudro
@@ -501,11 +557,11 @@ export const sketch = new p5((p) => {
         let npcY = boxBottom + 20;
 
         //dibujar imagen
-        p.tint(230,255); // ligero tintado para integrarlo
+        p.tint(230, 255); // ligero tintado para integrarlo
         p.image(currentNpcSkin, npcX, npcY, npcSize, npcSize);
         p.noTint();
       }
-      
+
       // Texto del chiste
       p.rectMode(p.CENTER);
       p.fill(COLORS.text);
@@ -514,14 +570,14 @@ export const sketch = new p5((p) => {
       p.textAlign(p.CENTER, p.CENTER);
 
       //Calcula la esquina superior izquierda del texto
-      // Que és la mitad del recuadro 
+      // Que és la mitad del recuadro
       // menos la mitad del ancho/alto del recuadro
       let textX = boxX;
       let textY = boxY;
 
       //margen interno de 20px
       p.text(robotPrase, textX, textY, boxW - 40, boxH - 40);
-      
+
       p.rectMode(p.CORNER);
     }
   }
