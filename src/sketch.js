@@ -34,7 +34,7 @@ export function setSettingsOpen(isOpen) {
     //Reaudar juego al cerrar ajustes
     sketch.loop(); // Reanuda el draw loop
     // Solo reanudar música si está activada
-    if(isMusicOn && gameState === "PLAYING" && sketch.sndMusic) sketch.sndMusic.loop();
+    // if(isMusicOn && gameState === "PLAYING" && sketch.sndMusic) sketch.sndMusic.loop();
   }
 }
 
@@ -115,7 +115,10 @@ export const sketch = new p5((p) => {
     p.soundFormats("mp3", "wav");
     sndCoin = p.loadSound("/sounds/coin.mp3");
     sndBoom = p.loadSound("/sounds/boom.mp3");
+
     sndMusic = p.loadSound("/sounds/music.mp3");
+    p.sndMusic = sndMusic; // exportar para control externo
+
     sndLaser = p.loadSound("/sounds/laser.mp3");
     sndReload = p.loadSound("/sounds/reload.mp3");
   };
@@ -186,9 +189,9 @@ export const sketch = new p5((p) => {
            // Si estamos en Settings, mantenemos pausado
            p.noLoop();
            //Reactivamos la música también en ajustes
-           if(isMusicOn && sndMusic && !sndMusic.isPlaying()) {
-             sndMusic.loop();
-           }
+          //  if(isMusicOn && sndMusic && !sndMusic.isPlaying()) {
+          //    sndMusic.loop();
+          //  }
         }
       }
     });
@@ -209,7 +212,8 @@ export const sketch = new p5((p) => {
       sndMusic &&
       !sndMusic.isPlaying() &&
       isMusicOn &&
-      gameState === "PLAYING"
+      gameState === "PLAYING" &&
+      !isSettingOpen
     ) {
       sndMusic.setVolume(0.5);
       sndMusic.loop();
@@ -255,7 +259,7 @@ export const sketch = new p5((p) => {
         if (!isMusicOn && sndMusic.isPlaying()) {
           sndMusic.pause();
         }
-        if (isMusicOn && !sndMusic.isPlaying() && gameState === "PLAYING") {
+        if (isMusicOn && !sndMusic.isPlaying() && gameState === "PLAYING" && !isSettingOpen) {
           sndMusic.setVolume(0.5);
           sndMusic.loop();
         }
