@@ -122,6 +122,13 @@ Para generar la aplicación nativa usando Capacitor:
         * Resolución de bugs y depuración.
         * Generación y refinamiento de estilos CSS.
 
+## 📥 Descargar APK
+
+Puedes descargar la versión Android aquí:
+
+tps://github.com/elecinas/skip-balls/releases/download/v1.0/app-debug.apk
+
+
 ## 📄 Licencia
 
 © 2025 Esther Lecina. Todos los derechos reservados.

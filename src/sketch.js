@@ -594,7 +594,7 @@ export const sketch = new p5((p) => {
     gameState = "GAMEOVER";
 
     //calcular y guardar lingotes
-    const lingotesEarned = Math.floor(sessionCoins / 3);
+    const lingotesEarned = Math.floor(sessionCoins / 10);
     if (lingotesEarned > 0) {
       GameStorage.getData().then(async (data) => {
         //actualizar lingotes
@@ -667,7 +667,7 @@ export const sketch = new p5((p) => {
     p.text(`Monedas: ${sessionCoins}`, p.width / 2, p.height / 2 - 80);
 
     // Cálculo visual de lingotes
-    const lingotesEarned = Math.floor(sessionCoins / 3);
+    const lingotesEarned = Math.floor(sessionCoins / 10);
     p.fill(COLORS.gold); // Dorado
     p.text(
       `Lingotes ganados: +${lingotesEarned}`,
