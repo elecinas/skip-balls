@@ -26,10 +26,10 @@ export function setSfxEnabled(enabled) {
 }
 export function setSettingsOpen(isOpen) {
   isSettingOpen = isOpen;
-  if(isOpen) {
+  if (isOpen) {
     // Pausar juego si se abren ajustes
     sketch.noLoop(); // Detener draw loop
-    if(sketch.sndMusic && sketch.sndMusic.isPlaying()) sketch.sndMusic.pause();
+    if (sketch.sndMusic && sketch.sndMusic.isPlaying()) sketch.sndMusic.pause();
   } else {
     //Reaudar juego al cerrar ajustes
     sketch.loop(); // Reanuda el draw loop
@@ -53,7 +53,7 @@ export const sketch = new p5((p) => {
   let player = { x: 0, y: 0, size: 70 };
   let vx = 0;
   let floorHeight = 150;
-  let bullets = [];// array de proyectiles
+  let bullets = []; // array de proyectiles
   let ammo = 10; // munición inicial
   let fireBtn = { x: 0, y: 0, r: 35 }; // botón de disparo
 
@@ -179,16 +179,16 @@ export const sketch = new p5((p) => {
         }
         // Solo reanudamos si NO estamos en la pantalla de Settings
         if (!isSettingOpen) {
-           p.loop(); // VUELVE A ARRANCAR EL DRAW
+          p.loop(); // VUELVE A ARRANCAR EL DRAW
 
-           // Reanudar música si corresponde
-           if (isMusicOn && sndMusic && gameState === "PLAYING") {
-             sndMusic.loop();
-           }
+          // Reanudar música si corresponde
+          if (isMusicOn && sndMusic && gameState === "PLAYING") {
+            sndMusic.loop();
+          }
         } else {
-           // Si estamos en Settings, mantenemos pausado
-           p.noLoop();
-           //Reactivamos la música también en ajustes
+          // Si estamos en Settings, mantenemos pausado
+          p.noLoop();
+          //Reactivamos la música también en ajustes
           //  if(isMusicOn && sndMusic && !sndMusic.isPlaying()) {
           //    sndMusic.loop();
           //  }
@@ -259,7 +259,12 @@ export const sketch = new p5((p) => {
         if (!isMusicOn && sndMusic.isPlaying()) {
           sndMusic.pause();
         }
-        if (isMusicOn && !sndMusic.isPlaying() && gameState === "PLAYING" && !isSettingOpen) {
+        if (
+          isMusicOn &&
+          !sndMusic.isPlaying() &&
+          gameState === "PLAYING" &&
+          !isSettingOpen
+        ) {
           sndMusic.setVolume(0.5);
           sndMusic.loop();
         }
@@ -295,26 +300,25 @@ export const sketch = new p5((p) => {
   p.mousePressed = async () => {
     // Desbloquear audio en móviles
     p.userStartAudio();
-    
+
     if (gameState === "PLAYING") {
       //Calculardistancia del toque al botón
       let d = p.dist(p.mouseX, p.mouseY, fireBtn.x, fireBtn.y);
-      
+
       //Si tocamos DENTRO del botón Y tenemos balas
       if (d < fireBtn.r && ammo > 0) {
-          bullets.push(new Projectile(p, player.x, player.y - 40));
-          ammo--; 
-          
-          // Vibración
-          hapticsImpactLight();
-          
-          // Sonido
-          if(isSfxOn && sndLaser) {
-            sndLaser.setVolume(0.7);// volumen un poco más bajo
-            sndLaser.play();
-          }
+        bullets.push(new Projectile(p, player.x, player.y - 40));
+        ammo--;
+
+        // Vibración
+        hapticsImpactLight();
+
+        // Sonido
+        if (isSfxOn && sndLaser) {
+          sndLaser.setVolume(0.7); // volumen un poco más bajo
+          sndLaser.play();
+        }
       }
-      
     } else if (gameState === "GAMEOVER") {
       resetGame();
     }
@@ -371,12 +375,11 @@ export const sketch = new p5((p) => {
     const r = p.random();
 
     //75% de damage, 25% moneda, 5% arma especial
-    if(r < 0.05) {
-      type = "weapon";// arma especial (rara)
+    if (r < 0.05) {
+      type = "weapon"; // arma especial (rara)
     } else if (r < 0.25) {
-      type = "coin";  // 25% de probabilidad de ser moneda
+      type = "coin"; // 25% de probabilidad de ser moneda
     }
-
 
     particles.push(new Particle(p, x, y, radius, vel, type));
 
@@ -413,7 +416,7 @@ export const sketch = new p5((p) => {
           if (isSfxOn && sndCoin) sndCoin.play();
 
           continue;
-        } 
+        }
         //CASO 2: arma especial
         else if (particle.type === "weapon") {
           ammo += 5; // sumar 5 balas
@@ -421,7 +424,7 @@ export const sketch = new p5((p) => {
           hapticsImpactLight(); // Vibración ligera
 
           //TODO: sonido de recarga
-          if (isSfxOn && sndReload) sndReload .play();
+          if (isSfxOn && sndReload) sndReload.play();
           continue;
         }
         //CASO 3: partícula dañina
@@ -438,33 +441,34 @@ export const sketch = new p5((p) => {
     }
 
     // --- GESTIÓN DE BALAS ---
-    for (let i = bullets.length -1; i >=0; i--) {
-        const bullet = bullets[i];
-        bullet.update();
-        bullet.draw();
+    for (let i = bullets.length - 1; i >= 0; i--) {
+      const bullet = bullets[i];
+      bullet.update();
+      bullet.draw();
 
-        // Comprobar colisión con partículas
-        for (let j = particles.length -1; j >=0; j--) {
-            const particle = particles[j];
-            if (particle.type === "damage") {
-              let d = p.dist(bullet.x, bullet.y, particle.pos.x, particle.pos.y);
-              if (d < particle.radius + 5) { // 5 es la mitad del ancho del láser
-                  // Colisión: eliminar ambos
-                  particles.splice(j, 1);
-                  bullets.toDelete = true;
-                  //Efecto visual
-                  p.fill(255);
-                  p.noStroke();
-                  p.circle(particle.pos.x, particle.pos.y, 30);
-                  break;
-              }
-            }
+      // Comprobar colisión con partículas
+      for (let j = particles.length - 1; j >= 0; j--) {
+        const particle = particles[j];
+        if (particle.type === "damage") {
+          let d = p.dist(bullet.x, bullet.y, particle.pos.x, particle.pos.y);
+          if (d < particle.radius + 5) {
+            // 5 es la mitad del ancho del láser
+            // Colisión: eliminar ambos
+            particles.splice(j, 1);
+            bullets.toDelete = true;
+            //Efecto visual
+            p.fill(255);
+            p.noStroke();
+            p.circle(particle.pos.x, particle.pos.y, 30);
+            break;
+          }
         }
+      }
 
-        // Eliminar balas marcadas para borrar
-        if (bullet.toDelete) {
-            bullets.splice(i, 1);
-        }
+      // Eliminar balas marcadas para borrar
+      if (bullet.toDelete) {
+        bullets.splice(i, 1);
+      }
     }
   }
 
@@ -501,7 +505,7 @@ export const sketch = new p5((p) => {
       //Pequeño número de balas
       p.textSize(9);
       p.fill(255);
-      p.text(ammo, fireBtn.x + 20, fireBtn.y -20);
+      p.text(ammo, fireBtn.x + 20, fireBtn.y - 20);
     } else {
       p.text("Vacío", fireBtn.x, fireBtn.y);
     }
@@ -590,11 +594,40 @@ export const sketch = new p5((p) => {
     gameState = "GAMEOVER";
 
     //calcular y guardar lingotes
-    const lingotesEarned = Math.floor(sessionCoins / 30);
+    const lingotesEarned = Math.floor(sessionCoins / 3);
     if (lingotesEarned > 0) {
-      GameStorage.addLingotes(lingotesEarned);
-      // Ranking
-      GameStorage.saveRankingEntry(currentUsername, lingotesEarned);
+      GameStorage.getData().then(async (data) => {
+        //actualizar lingotes
+        data.lingotes = (data.lingotes || 0) + lingotesEarned;
+
+        //Actualizar ranking
+        if (!data.highScores) data.highScores = [];
+
+        const userIndex = data.highScores.findIndex((entry) => entry.name === currentUsername);
+
+        if (userIndex !== -1) {
+          // Si ya existe le sumamos los lingotes
+          data.highScores[userIndex].lingotes += lingotesEarned;
+        } else {
+          // Si no existe, creamos la entrada nueva
+          data.highScores.push({
+            name: currentUsername,
+            lingotes: lingotesEarned,
+          });
+        }
+
+        //Ordenar ranking
+        data.highScores.sort((a, b) => b.lingotes - a.lingotes);
+
+        //Mantener solo top 10
+        data.highScores = data.highScores.slice(0, 10);
+        
+        //Guardar datos
+        await GameStorage.saveData(data);
+      });
+      // GameStorage.addLingotes(lingotesEarned);
+      // // Ranking
+      // GameStorage.saveRankingEntry(currentUsername, lingotesEarned);
     }
 
     // Elegir robot NPC según categoría de chiste
@@ -634,7 +667,7 @@ export const sketch = new p5((p) => {
     p.text(`Monedas: ${sessionCoins}`, p.width / 2, p.height / 2 - 80);
 
     // Cálculo visual de lingotes
-    const lingotesEarned = Math.floor(sessionCoins / 30);
+    const lingotesEarned = Math.floor(sessionCoins / 3);
     p.fill(COLORS.gold); // Dorado
     p.text(
       `Lingotes ganados: +${lingotesEarned}`,
@@ -644,7 +677,7 @@ export const sketch = new p5((p) => {
 
     p.fill(100);
     p.textSize(16);
-    p.text("(30 monedas = 1 lingote)", p.width / 2, p.height / 2 - 10);
+    p.text("(10 monedas = 1 lingote)", p.width / 2, p.height / 2 - 10);
 
     // Texto parpadeante
     if (p.frameCount % 60 < 30) {
